@@ -2,6 +2,7 @@
 #define AIRPLANE_H
 
 #include "AirportObject.hpp"
+#include <memory>
 
 class Port;
 class Runway;
