@@ -20,8 +20,8 @@ class WaitingAirplanes
 
     private:
 
-        std::vector<std::shared_ptr<Airplane>> _airplanes;
-        std::vector<std::promise<void>> _promises;     
+        std::vector<std::shared_ptr<Airplane> > _airplanes;
+        std::vector<std::promise<void> > _promises;     
         std::mutex _mtx;
 };
 
