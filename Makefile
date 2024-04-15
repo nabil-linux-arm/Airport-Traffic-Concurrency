@@ -8,8 +8,8 @@ CXX := g++
 SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.s') # .s is static file
 # Prepends BUILD_DIR and appends .o to every src file
 
-OBJS := $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
-# OBJS := $(filter-out main.o, $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))) 
+# OBJS := $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
+OBJS := $(filter-out $(BUILD_DIR)/main.o, $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))) 
 
 
 VPATH = src
@@ -18,10 +18,13 @@ $(BUILD_DIR)/%.o: %.cpp %.hpp
 	@echo Buidling $@
 	$(CXX) -c $< -o $@ -std=c++11
 
-all: | $(OBJS)
+all: $(OBJS) $(BUILD_DIR)/main.o
+
+objs:
+	@echo $(OBJS)
 
 $(BUILD_DIR)/main.o: main.cpp
-	$(CXX) $< -o $@ -std=c++11
+	$(CXX) $< -c -o $@ -std=c++11
 
 $(OBJS): | $(BUILD_DIR)
 
