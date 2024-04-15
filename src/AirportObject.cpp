@@ -1,3 +1,6 @@
+#include <algorithm>
+#include <iostream>
+#include <thread>
 #include "AirportObject.hpp"
 
 int AirportObject::_id_count = 0;
@@ -23,8 +26,7 @@ AirportObject::AirportObject()
 
 AirportObject::~AirportObject()
 {
-    std::for_each(_threads.begin(), _threads.end(), [](std::thread &t) 
-    {
+    std::for_each(_threads.begin(), _threads.end(), [](std::thread &t) {
         t.join();
     });
 }
