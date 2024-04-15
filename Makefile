@@ -1,3 +1,5 @@
+# Reference: https://makefiletutorial.com/#getting-started
+
 SRC_DIRS := ./src
 BUILD_DIR := ./build
 TARGET_EXEC := airport-traffic.out

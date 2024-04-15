@@ -1,3 +1,4 @@
+# https://www.internalpointers.com/post/modern-cmake-beginner-introduction
 cmake_minimum_required(VERSION 3.11.3)
 
 project(Airport-traffic
