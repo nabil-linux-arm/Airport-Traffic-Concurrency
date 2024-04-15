@@ -10,21 +10,23 @@ SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.s') # .s is static f
 
 # OBJS := $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))
 OBJS := $(filter-out $(BUILD_DIR)/main.o, $(patsubst $(SRC_DIRS)/%.cpp, $(BUILD_DIR)/%.o, $(SRCS))) 
+MAIN := $(BUILD_DIR)/main.o
 
 
 VPATH = src
+
+all: $(BUILD_DIR)/$(TARGET_EXEC)
+
+$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS) $(MAIN)
+	$(CXX) $^ -o $@
+
+$(BUILD_DIR)/main.o: main.cpp
+	$(CXX) $< -c -o $@ -std=c++11
 
 $(BUILD_DIR)/%.o: %.cpp %.hpp
 	@echo Buidling $@
 	$(CXX) -c $< -o $@ -std=c++11
 
-all: $(OBJS) $(BUILD_DIR)/main.o
-
-objs:
-	@echo $(OBJS)
-
-$(BUILD_DIR)/main.o: main.cpp
-	$(CXX) $< -c -o $@ -std=c++11
 
 $(OBJS): | $(BUILD_DIR)
 
