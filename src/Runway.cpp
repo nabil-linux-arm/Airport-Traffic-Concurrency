@@ -1,9 +1,13 @@
 #include "Runway.hpp"
+#include "Airplane.hpp"
 
 Runway::Runway(){}
 
 void Runway::simulate(){}
-void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane){}
+void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
+{
+    printf("[Runway] - ADDING AIRPLANE %d", airplane->getID());
+}
 
 int WaitingAirplanes::getSize(){}
 
