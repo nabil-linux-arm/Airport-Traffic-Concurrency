@@ -4,8 +4,12 @@
 #include "AirportObject.hpp"
 #include "Gui.hpp"
 
+#include <ctime>
+
 int main()
 {
-    Runway run1;
+    srand(time(0));
+    Airplane boeing_01; 
+    boeing_01.simulate();
     return 0;
 }
