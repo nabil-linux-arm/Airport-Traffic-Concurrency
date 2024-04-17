@@ -1,4 +1,5 @@
 #include "Airplane.hpp"
+#include "Runway.hpp"
 #include <chrono>
 
 const int MIN_DELAY = 100;  // milliseconds
@@ -17,6 +18,9 @@ void Airplane::simulate()
 {
     startTimer(MIN_DELAY,MAX_DELAY);
     printf("[Airplane] - Stop Timer\n");
+    // Add Airplane to landing strip queue
+    // _nextRunway->addAirplaneToQueue(get_shared_this());
+    printf("[Runway] - ADDING AIRPLANE %d\n", this->getID());
 }
 void move() {}                   
 void moveToPort(int port_id) {}   
