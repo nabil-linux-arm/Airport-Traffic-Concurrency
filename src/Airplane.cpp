@@ -34,10 +34,14 @@ void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 void Airplane::move() 
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Airplane] - Simulation Started\n");
+    printf("[Airplane %d] - Simulation Started\n", this->getID());
     lck.unlock();
 
     startTimer(MIN_DELAY, MAX_DELAY);
+
+    lck.lock();
+    printf("[Airplane %d] - Simulation Finished\n", this->getID());
+    lck.unlock();
 }                   
 void Airplane::moveToPort(int port_id) {}   
 bool Airplane::isDestinationReached() {}    
@@ -48,7 +52,7 @@ void Airplane::startTimer(int min, int max)
     int range = max - min;
     int timeDelay = (rand() % abs(range)) + min;
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Airplane] - Start Timer: %d ms\n", timeDelay);
+    printf("[Airplane %d] - Start Timer: %d ms\n", this->getID(), timeDelay);
     lck.unlock();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
