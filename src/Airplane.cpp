@@ -1,6 +1,7 @@
 #include "Airplane.hpp"
 #include "Runway.hpp"
 #include <chrono>
+#include <thread>
 
 // TODO: 
 // - [] Define what the airplane state is intitially 
@@ -20,18 +21,9 @@ Airplane::Airplane()
 
 void Airplane::simulate() 
 {
-    startTimer(MIN_DELAY,MAX_DELAY);
-    // Add Airplane to landing strip queue
-    if (_currentRunway != nullptr)
-    {
-        _currentRunway->addAirplaneToQueue(get_shared_this());
-        startTimer(MIN_DELAY,MAX_DELAY);    
-        _currentRunway->permitAirplaneIn();
-    }
-    else
-    {
-        printf("[Airplane] ERROR - Runway not set\n");
-    }
+    // Creates a threasd for the move function of this airplane
+    // emplace_back is used instead of push because thread objects cannot be copied (done when pushing objects)
+    _threads.emplace_back(std::thread(&Airplane::move, this));
 }
 
 void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
@@ -39,16 +31,25 @@ void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
     _currentRunway = runway;
 }
 
-void move() {}                   
-void moveToPort(int port_id) {}   
-bool isDestinationReached() {}    
+void Airplane::move() 
+{
+    std::unique_lock<std::mutex> lck(_cout_mtx);
+    printf("[Airplane] - Simulation Started\n");
+    lck.unlock();
+
+    startTimer(MIN_DELAY, MAX_DELAY);
+}                   
+void Airplane::moveToPort(int port_id) {}   
+bool Airplane::isDestinationReached() {}    
 
 void Airplane::startTimer(int min, int max)
 {
     // TODO: Create a limits for min and max
     int range = max - min;
     int timeDelay = (rand() % abs(range)) + min;
+    std::unique_lock<std::mutex> lck(_cout_mtx);
     printf("[Airplane] - Start Timer: %d ms\n", timeDelay);
+    lck.unlock();
+
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
-    printf("[Airplane] - Stop Timer\n");
 }
