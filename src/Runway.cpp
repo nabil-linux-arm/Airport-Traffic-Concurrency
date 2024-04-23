@@ -27,9 +27,9 @@ Runway::Runway()
 
 Runway::~Runway()
 {
-    std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Runway] - CALLING DECONSTRUCTOR\n");
-    lck.unlock();
+    // std::unique_lock<std::mutex> lck(_cout_mtx);
+    // printf("[Runway] - CALLING DECONSTRUCTOR\n");
+    // lck.unlock();
 }
 
 void Runway::simulate()
@@ -39,11 +39,11 @@ void Runway::simulate()
 
 void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 {
-    // std::unique_lock<std::mutex> lck(_cout_mtx);
-    // printf("[Runway] - ADDING AIRPLANE, id: %d\n", airplane->getID());
-    // lck.unlock();
+    std::unique_lock<std::mutex> lck(_cout_mtx);
+    printf("[Runway] - ADDING AIRPLANE, id: %d\n", airplane->getID());
+    lck.unlock();
 
-    // _waitingQueue.pushBack(airplane);
+    _waitingQueue.pushBack(airplane);
 }
 
 void Runway::permitAirplaneIn()
