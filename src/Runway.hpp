@@ -30,6 +30,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
     public:
         
         Runway();
+        ~Runway();
 
         // Behavior functions
         void simulate();
@@ -44,6 +45,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         std::shared_ptr<Runway> get_shared_this() { return shared_from_this(); }
 
     private:
+        void processAirplaneQueue();
 
         double _length;                        // Length of the Runway
         std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one

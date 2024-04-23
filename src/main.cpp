@@ -11,8 +11,9 @@ int main()
     srand(time(0));
 
     auto landing_runway = std::make_shared<Runway>(); // OR
-    auto boeing = std::make_shared<Airplane>(new Airplane);
-    boeing->setCurrentRunway
+    auto boeing = std::make_shared<Airplane>();
+    // boeing->setCurrentRunway(landing_runway);
+    boeing->simulate();
     // Group of airplanes
     // std::vector< std::shared_ptr<Airplane> > airplanes;
     // for (int i = 0; i < 5; i++)

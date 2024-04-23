@@ -24,6 +24,7 @@ void Airplane::simulate()
     // Creates a threasd for the move function of this airplane
     // emplace_back is used instead of push because thread objects cannot be copied (done when pushing objects)
     _threads.emplace_back(std::thread(&Airplane::move, this));
+    // move();
 }
 
 void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
@@ -36,6 +37,11 @@ void Airplane::move()
     std::unique_lock<std::mutex> lck(_cout_mtx);
     printf("[Airplane %d] - Simulation Started\n", this->getID());
     lck.unlock();
+
+    startTimer(MIN_DELAY, MAX_DELAY);
+
+    // _currentRunway->addAirplaneToQueue(get_shared_this());
+    auto my_address = get_shared_this();
 
     startTimer(MIN_DELAY, MAX_DELAY);
 
