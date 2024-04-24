@@ -1,5 +1,6 @@
 #include "Runway.hpp"
 #include "Airplane.hpp"
+#include <chrono>
 
 int WaitingAirplanes::getSize()
 {
@@ -35,6 +36,9 @@ Runway::~Runway()
 
 void Runway::simulate()
 {
+    // TODO:
+    // - [] Improve the fact that this does not create a thread that shares ownership with
+    //      the main thread object.
     _threads.emplace_back(std::thread(&Runway::processAirplaneQueue, this));
 }
 
@@ -63,4 +67,24 @@ void Runway::permitAirplaneIn()
 }
 void Runway::processAirplaneQueue()
 {
+    std::unique_lock<std::mutex> lck(_cout_mtx);
+    printf("[Runway] - START RUNWAY PROCESS: %d\n", getID());
+    lck.unlock();
+
+    // Continually process the queue
+    while (true)
+    {
+        // Simulates time it takes for a plane to enter a queue
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+        if (_waitingQueue.getSize() > 0) 
+        {
+            // Let the airplane proceed into the runway
+            lck.lock();
+            printf("[Runway] - REMOVING AIRPLANE\n");
+            lck.unlock();
+
+            _waitingQueue.permitEntry();
+        }
+    }
 }
