@@ -8,23 +8,33 @@ int WaitingAirplanes::getSize()
     return _airplanes.size();
 }
 
-void WaitingAirplanes::pushBack(std::shared_ptr<Airplane> airplane)
+void WaitingAirplanes::pushBack(std::shared_ptr<Airplane> airplane, std::promise<void> &&prms)
 {
     std::lock_guard<std::mutex> lck(_mtx);
     _airplanes.push_back(airplane);
+    _promises.push_back(std::move(prms));
 }
 
 void WaitingAirplanes::permitEntry()
 {
     std::lock_guard<std::mutex> lck(_mtx);
-    _airplanes.pop_back();
+
+    auto firstAirplane = _airplanes.begin();
+    auto firstPromise = _promises.begin();
+
+    firstPromise->set_value();
+
+    _airplanes.erase(firstAirplane);
+    _promises.erase(firstPromise);
 }
+
 
 // Runway Class
 
 Runway::Runway()
 {
     _length = 40.0;
+    _isBlocked = false;
 }
 
 Runway::~Runway()
@@ -45,10 +55,17 @@ void Runway::simulate()
 void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Runway] - ADDING AIRPLANE, id: %d\n", airplane->getID());
+    printf("[Runway] - ADDING AIRPLANE #%d\n", airplane->getID());
     lck.unlock();
 
-    _waitingQueue.pushBack(airplane);
+    std::promise<void> promiseAllowAirplaneToEnter;
+    std::future<void> futureAllowAirplaneToEnter = promiseAllowAirplaneToEnter.get_future();
+
+    _waitingQueue.pushBack(airplane, std::move(promiseAllowAirplaneToEnter));
+
+    futureAllowAirplaneToEnter.wait();
+    lck.lock();
+    printf("[Runway] - Allow airplane to enter runway, #%d\n", airplane->getID());
 }
 
 void Runway::permitAirplaneIn()
@@ -74,11 +91,11 @@ void Runway::processAirplaneQueue()
     // Continually process the queue
     while (true)
     {
-        // Simulates time it takes for a plane to exit the runway 
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        if (_waitingQueue.getSize() > 0) 
+        if (_waitingQueue.getSize() > 0 && _isBlocked == false) 
         {
+            _isBlocked = true;
             // Let the airplane proceed into the runway
             lck.lock();
             printf("[Runway] - REMOVING AIRPLANE\n");
@@ -87,4 +104,9 @@ void Runway::processAirplaneQueue()
             _waitingQueue.permitEntry();
         }
     }
+}
+void Runway::runwayClear()    
+{
+    // Unblock the runway queue
+    this->setIsBlocked(false);
 }

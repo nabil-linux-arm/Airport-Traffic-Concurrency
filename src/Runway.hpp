@@ -15,7 +15,7 @@ class WaitingAirplanes
 
         int getSize();
 
-        void pushBack(std::shared_ptr<Airplane> airplane);
+        void pushBack(std::shared_ptr<Airplane> airplane, std::promise<void> &&prms);
         void permitEntry();
 
     private:
@@ -36,6 +36,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         void simulate();
         void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
         void permitAirplaneIn();    // Pop the first airplane off the queue and permit it into runway
+        void runwayClear();         // Signal to runway that the plane has left the runway
 
         std::shared_ptr<Runway> getExitRunway() { return _exitRunway; }
         void setExitRunway(std::shared_ptr<Runway> runway) { _exitRunway = runway; }
@@ -46,10 +47,12 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
 
     private:
         void processAirplaneQueue();
+        void setIsBlocked(bool blocked) { _isBlocked = blocked; }
 
         double _length;                        // Length of the Runway
         std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one
         WaitingAirplanes _waitingQueue;
+        bool _isBlocked;
 
 };
 

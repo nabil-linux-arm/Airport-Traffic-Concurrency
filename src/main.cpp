@@ -25,7 +25,7 @@ int main()
     auto landing_runway = std::make_shared<Runway>(); // OR
     std::vector< std::shared_ptr<Airplane> > airplanes;
 
-    createAirport(landing_runway, airplanes, 5);
+    createAirport(landing_runway, airplanes, 1);
 
     // Begin simulation
     landing_runway->simulate();

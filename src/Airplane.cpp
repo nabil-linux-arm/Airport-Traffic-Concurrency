@@ -55,6 +55,10 @@ void Airplane::move()
     {
         _currentRunway->addAirplaneToQueue(get_shared_this());
     }
+
+    // Simulates time it takes for a plane to exit the runway 
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    _currentRunway->runwayClear();
 }                   
 
 void Airplane::moveToPort(int port_id) {}   
