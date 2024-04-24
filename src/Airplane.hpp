@@ -19,9 +19,9 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
         void setCurrentRunway(std::shared_ptr<Runway> runway);
 
         std::shared_ptr<Airplane> get_shared_this() { return shared_from_this(); }
-        void move();                     // main logical function for the airplane
 
     private:
+        void move();                     // main logical function for the airplane
         void moveToPort(int port_id);    // creates the animation for moving to a specified port
         bool isDestinationReached();     // Abstracted function to decide when it reaches destination
 

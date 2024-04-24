@@ -13,11 +13,11 @@ int main()
 
     auto landing_runway = std::make_shared<Runway>(); // OR
     auto boeing = std::make_shared<Airplane>();
-    // Airplane boeing;
-    // boeing->setCurrentRunway(landing_runway);
-    // std::thread qatar(&Airplane::move, boeing);
-    // qatar.join();
+    boeing->setCurrentRunway(landing_runway);
+
     boeing->simulate();
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    landing_runway->permitAirplaneIn();
 
     // Needed to keep the main thread for leaving scope to early thereby destroying the object
     while(true) 

@@ -3,18 +3,19 @@
 
 int WaitingAirplanes::getSize()
 {
+    std::lock_guard<std::mutex> lck(_mtx);
     return _airplanes.size();
 }
 
 void WaitingAirplanes::pushBack(std::shared_ptr<Airplane> airplane)
 {
-     _airplanes.push_back(airplane);
+    std::lock_guard<std::mutex> lck(_mtx);
+    _airplanes.push_back(airplane);
 }
 
 void WaitingAirplanes::permitEntry()
 {
-    printf("[Runway] - REMOVING AIRPLANE, Current size of waiting Queue: %d\n", this->getSize());
-    printf("[Runway] - REMOVING AIRPLANE, id: %d\n", _airplanes.back()->getID());
+    std::lock_guard<std::mutex> lck(_mtx);
     _airplanes.pop_back();
 }
 
@@ -48,7 +49,17 @@ void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 
 void Runway::permitAirplaneIn()
 {
-    _waitingQueue.permitEntry();
+    std::unique_lock<std::mutex> lck(_cout_mtx);
+    printf("[Runway] - Queue size: %d\n", _waitingQueue.getSize());
+    lck.unlock();
+    if (_waitingQueue.getSize() > 0) 
+    {
+        lck.lock();
+        printf("[Runway] - REMOVING AIRPLANE\n");
+        lck.unlock();
+        _waitingQueue.permitEntry();
+
+    }
 }
 void Runway::processAirplaneQueue()
 {

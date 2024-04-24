@@ -45,7 +45,16 @@ void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 void Airplane::move() 
 {
     startTimer(MIN_DELAY, MAX_DELAY);
-    _currentRunway->addAirplaneToQueue(get_shared_this());
+    if (_currentRunway == nullptr) 
+    {
+        std::unique_lock<std::mutex> lck(_cout_mtx);
+        printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
+        lck.unlock();
+    }
+    else
+    {
+        _currentRunway->addAirplaneToQueue(get_shared_this());
+    }
 }                   
 
 void Airplane::moveToPort(int port_id) {}   
