@@ -74,8 +74,8 @@ void Runway::processAirplaneQueue()
     // Continually process the queue
     while (true)
     {
-        // Simulates time it takes for a plane to enter a queue
-        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+        // Simulates time it takes for a plane to exit the runway 
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 
         if (_waitingQueue.getSize() > 0) 
         {
