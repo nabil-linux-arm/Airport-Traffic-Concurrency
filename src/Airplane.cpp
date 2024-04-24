@@ -57,7 +57,7 @@ void Airplane::move()
     }
 
     // Simulates time it takes for a plane to exit the runway 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
     _currentRunway->runwayClear();
 }                   
 

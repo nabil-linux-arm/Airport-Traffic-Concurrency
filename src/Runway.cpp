@@ -65,23 +65,9 @@ void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 
     futureAllowAirplaneToEnter.wait();
     lck.lock();
-    printf("[Runway] - Allow airplane to enter runway, #%d\n", airplane->getID());
+    printf("[Runway] - ALLOW ENTER FOR AIRPLANE #%d\n", airplane->getID());
 }
 
-void Runway::permitAirplaneIn()
-{
-    std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Runway] - Queue size: %d\n", _waitingQueue.getSize());
-    lck.unlock();
-    if (_waitingQueue.getSize() > 0) 
-    {
-        lck.lock();
-        printf("[Runway] - REMOVING AIRPLANE\n");
-        lck.unlock();
-        _waitingQueue.permitEntry();
-
-    }
-}
 void Runway::processAirplaneQueue()
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
@@ -97,10 +83,6 @@ void Runway::processAirplaneQueue()
         {
             _isBlocked = true;
             // Let the airplane proceed into the runway
-            lck.lock();
-            printf("[Runway] - REMOVING AIRPLANE\n");
-            lck.unlock();
-
             _waitingQueue.permitEntry();
         }
     }
