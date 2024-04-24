@@ -12,6 +12,7 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
     public:
         // Constructors/Destructors
         Airplane();
+        ~Airplane();
 
         // Behaviour functions
         void simulate();
