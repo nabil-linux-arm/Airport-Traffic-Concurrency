@@ -44,21 +44,32 @@ void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 
 void Airplane::move() 
 {
+    // Timer for when the airplane is in the air
     startTimer(MIN_DELAY, MAX_DELAY);
-    if (_currentRunway == nullptr) 
-    {
-        std::unique_lock<std::mutex> lck(_cout_mtx);
-        printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
-        lck.unlock();
-    }
-    else
-    {
-        _currentRunway->addAirplaneToQueue(get_shared_this());
-    }
 
-    // Simulates time it takes for a plane to exit the runway 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-    _currentRunway->runwayClear();
+    while (true)
+    {
+
+        if (_currentRunway == nullptr) 
+        {
+            std::unique_lock<std::mutex> lck(_cout_mtx);
+            printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
+            lck.unlock();
+        }
+        else
+        {
+            _currentRunway->addAirplaneToQueue(get_shared_this());
+        }
+        // Simulates time it takes for a plane to fully travel across the runway or other stuff
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+
+        // Signal that the runway is clear
+        _currentRunway->runwayClear();
+
+        // Set new runway as next runway
+        _currentRunway = _currentRunway->getExitRunway();
+
+    }
 }                   
 
 void Airplane::moveToPort(int port_id) {}   

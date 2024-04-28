@@ -40,6 +40,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
 
         std::shared_ptr<Runway> getExitRunway() { return _exitRunway; }
         void setExitRunway(std::shared_ptr<Runway> runway) { _exitRunway = runway; }
+
         double getLength() { return _length; }
         void setLength(double length) { _length = length; }
 
