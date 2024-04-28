@@ -35,6 +35,13 @@ Runway::Runway()
 {
     _length = 40.0;
     _isBlocked = false;
+    _isLandingRunway = false;
+}
+
+Runway::Runway(bool is_landing_runway) : _isLandingRunway(is_landing_runway)
+{
+    _length = 40.0;
+    _isBlocked = false;
 }
 
 Runway::~Runway()
@@ -55,7 +62,7 @@ void Runway::simulate()
 void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Runway] - ADDING AIRPLANE #%d\n", airplane->getID());
+    printf("[Runway %d] - ENTER QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
     lck.unlock();
 
     std::promise<void> promiseAllowAirplaneToEnter;
@@ -65,7 +72,7 @@ void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 
     futureAllowAirplaneToEnter.wait();
     lck.lock();
-    printf("[Runway] - ALLOW ENTER FOR AIRPLANE #%d\n", airplane->getID());
+    printf("[Runway %d] - EXIT QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
 }
 
 void Runway::processAirplaneQueue()
