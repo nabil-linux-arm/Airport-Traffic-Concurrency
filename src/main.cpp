@@ -31,6 +31,7 @@ int main()
 
     // Set exit ruways (this one will be cyclic)
     landing_runway->setExitRunway(port_runway);
+    landing_runway->setIsLandingRunway(true);
     port_runway->setExitRunway(landing_runway);
 
     // Begin simulation

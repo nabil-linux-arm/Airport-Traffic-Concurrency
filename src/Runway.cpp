@@ -35,6 +35,7 @@ Runway::Runway()
 {
     _length = 40.0;
     _isBlocked = false;
+    _isLandingRunway = false;
 }
 
 Runway::~Runway()

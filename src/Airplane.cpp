@@ -28,13 +28,19 @@ Airplane::~Airplane()
 
 void Airplane::simulate() 
 {
+    // Provide some error checking
+    if (_currentRunway == nullptr) 
+    {
+        std::unique_lock<std::mutex> lck(_cout_mtx);
+        printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
+        lck.unlock();
+        return;
+    }
     // Creates a threasd for the move function of this airplane
     // emplace_back is used instead of push because thread objects cannot be copied (done when pushing objects)
     // Sufficient amount of time must pass in order for thread object to increment the shared_ptr
     // count for the object. If not the Main thread will finish before this thread and deallocate it.
     _threads.emplace_back(std::thread(&Airplane::move, this));
-    // move();
-
 }
 
 void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
@@ -44,22 +50,15 @@ void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 
 void Airplane::move() 
 {
-    // Timer for when the airplane is in the air
-    startTimer(MIN_DELAY, MAX_DELAY);
-
     while (true)
     {
+        if (_currentRunway->getIsLandingRunway() == true)
+        {
+            // Timer for when the airplane is in the air
+            startTimer(MIN_DELAY, MAX_DELAY);
+        }
+        _currentRunway->addAirplaneToQueue(get_shared_this());
 
-        if (_currentRunway == nullptr) 
-        {
-            std::unique_lock<std::mutex> lck(_cout_mtx);
-            printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
-            lck.unlock();
-        }
-        else
-        {
-            _currentRunway->addAirplaneToQueue(get_shared_this());
-        }
         // Simulates time it takes for a plane to fully travel across the runway or other stuff
         std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
@@ -68,7 +67,6 @@ void Airplane::move()
 
         // Set new runway as next runway
         _currentRunway = _currentRunway->getExitRunway();
-
     }
 }                   
 

@@ -21,9 +21,10 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
         std::shared_ptr<Airplane> get_shared_this() { return shared_from_this(); }
 
     private:
-        void move();                     // main logical function for the airplane
-        void moveToPort(int port_id);    // creates the animation for moving to a specified port
-        bool isDestinationReached();     // Abstracted function to decide when it reaches destination
+        void move(); // main logical function for the airplane
+        void NewFunction();
+        void moveToPort(int port_id); // creates the animation for moving to a specified port
+        bool isDestinationReached();  // Abstracted function to decide when it reaches destination
 
         // Support functions
         void startTimer(int min, int max);  // Starts the delay for planes to be flying
