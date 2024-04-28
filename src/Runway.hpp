@@ -30,6 +30,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
     public:
         
         Runway();
+        Runway(bool is_landing_runway);
         ~Runway();
 
         // Behavior functions
@@ -45,7 +46,6 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         void setLength(double length) { _length = length; }
 
         bool getIsLandingRunway() { return _isLandingRunway; }
-        void setIsLandingRunway(bool landing_permitted) { _isLandingRunway = landing_permitted; }
 
         std::shared_ptr<Runway> get_shared_this() { return shared_from_this(); }
 
@@ -58,6 +58,9 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         WaitingAirplanes _waitingQueue;
         bool _isBlocked;
         bool _isLandingRunway;                // A quick variable to simulate the flight time of the airplane
+                                              // This variable is shared with multiple threads without mutex (unsafe),
+                                              // However, the variable does not change and is constant throughout the
+                                              // simulation.
 
 };
 

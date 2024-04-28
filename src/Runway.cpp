@@ -38,6 +38,12 @@ Runway::Runway()
     _isLandingRunway = false;
 }
 
+Runway::Runway(bool is_landing_runway) : _isLandingRunway(is_landing_runway)
+{
+    _length = 40.0;
+    _isBlocked = false;
+}
+
 Runway::~Runway()
 {
     // std::unique_lock<std::mutex> lck(_cout_mtx);
