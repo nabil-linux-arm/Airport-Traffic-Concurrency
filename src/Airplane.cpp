@@ -66,7 +66,10 @@ void Airplane::move()
         _currentRunway->runwayClear();
 
         // Set new runway as next runway
-        _currentRunway = _currentRunway->getExitRunway();
+        if (_currentRunway->getExitRunway() != nullptr) 
+        {
+            _currentRunway = _currentRunway->getExitRunway();
+        }
     }
 }                   
 

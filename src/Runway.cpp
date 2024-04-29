@@ -13,6 +13,7 @@ void WaitingAirplanes::pushBack(std::shared_ptr<Airplane> airplane, std::promise
     std::lock_guard<std::mutex> lck(_mtx);
     _airplanes.push_back(airplane);
     _promises.push_back(std::move(prms));
+
 }
 
 void WaitingAirplanes::permitEntry()
@@ -36,12 +37,14 @@ Runway::Runway()
     _length = 40.0;
     _isBlocked = false;
     _isLandingRunway = false;
+    _exitRunway = nullptr;
 }
 
 Runway::Runway(bool is_landing_runway) : _isLandingRunway(is_landing_runway)
 {
     _length = 40.0;
     _isBlocked = false;
+    _exitRunway = nullptr;
 }
 
 Runway::~Runway()
@@ -70,7 +73,9 @@ void Runway::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 
     _waitingQueue.pushBack(airplane, std::move(promiseAllowAirplaneToEnter));
 
+    // Wait until permit entry is called
     futureAllowAirplaneToEnter.wait();
+
     lck.lock();
     printf("[Runway %d] - EXIT QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
 }
@@ -84,7 +89,7 @@ void Runway::processAirplaneQueue()
     // Continually process the queue
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
         if (_waitingQueue.getSize() > 0 && _isBlocked == false) 
         {
