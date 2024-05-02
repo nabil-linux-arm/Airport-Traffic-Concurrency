@@ -1,7 +1,24 @@
 #include "Port.hpp"
 #include "Airplane.hpp"
 
-Port::Port(){}
+Port::Port()
+{
+    _type = port;
+    _port_count = 0;
+}
+
+Port::Port(int n_ports) : _port_count(n_ports)
+{
+    _type = port;
+}
+
+void Port::simulate()
+{
+    // To manage airplanes waiting for unblocked runway
+    _threads.emplace_back(std::thread(&Port::processAirplaneQueue, this));
+    // To manage airplanes waiting for a port to be assigned to them
+    _threads.emplace_back(std::thread(&Port::processPortQueue, this));
+}
 
 void Port::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 {
@@ -9,12 +26,21 @@ void Port::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
     printf("[PORT %d] - ENTER QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
     lck.unlock();
 
+    // (1) First the airplane must have a port assigned to him before moving on
+    std::promise<void> promiseAssignPort;
+    std::future<void> futureAirplaneAssignedPort = promiseAssignPort.get_future();
+
+    _waitingPortQueue.pushBack(airplane, std::move(promiseAssignPort));
+    
+    futureAirplaneAssignedPort.wait();
+    airplane->setPortAssigned(true);
+
+    // (2) Join the Runway queue
     std::promise<void> promiseAllowAirplaneToEnter;
     std::future<void> futureAllowAirplaneToEnter = promiseAllowAirplaneToEnter.get_future();
 
     _waitingQueue.pushBack(airplane, std::move(promiseAllowAirplaneToEnter));
     
-    // Wait until permit entry is called
     futureAllowAirplaneToEnter.wait();
 
     lck.lock();
@@ -22,7 +48,7 @@ void Port::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
 }
 
 // Generates random delay and starts a timer in ms for the airplane to wait in port.
-void Port::startRandomWait(double min_ms, double max_ms)
+void Terminal::startRandomWait(double min_ms, double max_ms)
 {
     int range = max_ms - min_ms;
     int timeDelay = (rand() % abs(range)) + min_ms;
@@ -31,4 +57,28 @@ void Port::startRandomWait(double min_ms, double max_ms)
     lck.unlock();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
+}
+void Port::processPortQueue()
+{
+    std::unique_lock<std::mutex> lck(_cout_mtx);
+    printf("[PORT] - START PROCESS PORT QUEUE: %d\n", getID());
+    lck.unlock();
+
+    // Continually process the queue
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        if (_waitingPortQueue.getSize() > 0 && getPortCount() > 0) 
+        {
+            lck.lock();
+            printf("[PORT] - PORT COUNT: %d\n", this->getPortCount());
+            lck.unlock();
+
+            this->decPortCount();
+            // Let the airplane proceed into the runway
+            _waitingPortQueue.permitEntry();
+        }
+    }
+
 }

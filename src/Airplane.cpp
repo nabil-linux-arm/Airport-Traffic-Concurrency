@@ -1,5 +1,7 @@
 #include "Airplane.hpp"
 #include "Runway.hpp"
+#include "Port.hpp"
+
 #include <chrono>
 #include <thread>
 #include <iostream>
@@ -14,10 +16,11 @@ const int MAX_DELAY = 5000; // milliseconds
 
 Airplane::Airplane()
 {
-    _port = nullptr;
+    // _port = nullptr;
     _currentRunway = nullptr;
     _type = airplane;
     _speed = 500; // m/s
+    _portAssigned = false;
 }
 
 Airplane::~Airplane()
@@ -64,6 +67,17 @@ void Airplane::move()
 
         // Signal that the runway is clear
         _currentRunway->runwayClear();
+
+        // If Port is assigned
+        if(this->isPortAssigned() == true)
+        {
+            startTimer(2000, 10000);
+            this->setPortAssigned(false);
+
+            // Convert to derived Port class
+            std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_currentRunway);
+            runway_port->incPortCount();
+        }
 
         // Set new runway as next runway
         if (_currentRunway->getExitRunway() != nullptr) 

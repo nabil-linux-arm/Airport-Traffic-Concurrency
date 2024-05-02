@@ -93,12 +93,13 @@ void Runway::processAirplaneQueue()
 
         if (_waitingQueue.getSize() > 0 && _isBlocked == false) 
         {
-            _isBlocked = true;
+            this->setIsBlocked(true);
             // Let the airplane proceed into the runway
             _waitingQueue.permitEntry();
         }
     }
 }
+
 void Runway::runwayClear()    
 {
     // Unblock the runway queue

@@ -7,6 +7,7 @@
 #include <ctime>
 #include <iostream>
 
+void createAirport(std::shared_ptr<Runway> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes);
 void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes);
 
 int main()
@@ -22,8 +23,8 @@ int main()
 
 
     // Initialise simulation
-    auto landing_runway = std::make_shared<Runway>(true); 
-    auto port_runway = std::make_shared<Port>(); 
+    // auto landing_runway = std::make_shared<Runway>(true); 
+    auto port_runway = std::make_shared<Port>(5); 
     std::vector< std::shared_ptr<Airplane> > airplanes;
 
     
@@ -49,7 +50,7 @@ int main()
     return 0;
 }
 
-void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes)
+void createAirport(std::shared_ptr<Runway> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes)
 {
     for (int i = 0; i < nAirplanes; i++)
     {
@@ -57,4 +58,13 @@ void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Ai
         airplanes.at(i)->setCurrentRunway(runway);
     }
 
+}
+
+void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes)
+{
+    for (int i = 0; i < nAirplanes; i++)
+    {
+        airplanes.push_back(std::make_shared<Airplane>());
+        airplanes.at(i)->setCurrentRunway(runway);
+    }
 }

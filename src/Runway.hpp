@@ -7,6 +7,12 @@
 #include <memory>
 #include "AirportObject.hpp"
 
+enum RunwayType
+{
+    landing,
+    port
+};
+
 class Airplane;
 
 class WaitingAirplanes
@@ -36,6 +42,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         // Behavior functions
         void simulate();
         virtual void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
+
         void runwayClear();         // Signal to runway that the plane has left the runway
 
         std::shared_ptr<Runway> getExitRunway() { return _exitRunway; }
@@ -50,9 +57,10 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
     
     protected:
         WaitingAirplanes _waitingQueue;
+        void processAirplaneQueue();
 
     private:
-        void processAirplaneQueue();
+
         void setIsBlocked(bool blocked) { _isBlocked = blocked; }
 
         double _length;                        // Length of the Runway
@@ -62,7 +70,6 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
                                               // This variable is shared with multiple threads without mutex (unsafe),
                                               // However, the variable does not change and is constant throughout the
                                               // simulation.
-
 };
 
 #endif
