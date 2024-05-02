@@ -28,7 +28,7 @@ int main()
     std::vector< std::shared_ptr<Airplane> > airplanes;
 
     
-    createAirport(port_runway, airplanes, 1);
+    createAirport(port_runway, airplanes, 5);
 
     // // Set exit ruways (this one will be cyclic)
     // landing_runway->setExitRunway(port_runway);

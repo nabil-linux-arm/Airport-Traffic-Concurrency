@@ -61,7 +61,7 @@ void Terminal::startRandomWait(double min_ms, double max_ms)
 void Port::processPortQueue()
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[PORT] - START PROCESS PORT QUEUE: %d\n", getID());
+    printf("[PORT %d] - START PROCESS PORT QUEUE\n",getID());
     lck.unlock();
 
     // Continually process the queue
@@ -72,7 +72,7 @@ void Port::processPortQueue()
         if (_waitingPortQueue.getSize() > 0 && getPortCount() > 0) 
         {
             lck.lock();
-            printf("[PORT] - PORT COUNT: %d\n", this->getPortCount());
+            printf("[PORT %d] - PORT COUNT: %d\n", getID(),this->getPortCount());
             lck.unlock();
 
             this->decPortCount();
@@ -81,4 +81,20 @@ void Port::processPortQueue()
         }
     }
 
+}
+
+int Port::getPortCount()
+{ 
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    return _port_count; 
+}
+void Port::incPortCount() 
+{ 
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    _port_count++; 
+}
+void Port::decPortCount() 
+{ 
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    _port_count--; 
 }

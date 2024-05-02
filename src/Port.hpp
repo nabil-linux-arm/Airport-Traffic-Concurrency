@@ -24,9 +24,9 @@ class Port : public Runway
         void simulate();
         void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
 
-        int getPortCount() { return _port_count; }
-        void incPortCount() { _port_count++; }
-        void decPortCount() { _port_count--; }
+        int getPortCount();
+        void incPortCount();
+        void decPortCount();
 
     private:
         void processPortQueue();
@@ -36,6 +36,7 @@ class Port : public Runway
         std::shared_ptr<Airplane> _dockedAirplane;   // Airplane currently occupying the port
         std::shared_ptr<Runway> _runway; // Runway the port is attached to
         int _port_count;
+        std::mutex _count_mtx;
 
         RunwayType _type;
 
