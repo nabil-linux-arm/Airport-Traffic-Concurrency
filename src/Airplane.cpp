@@ -63,7 +63,7 @@ void Airplane::move()
         _currentRunway->addAirplaneToQueue(get_shared_this());
 
         // Simulates time it takes for a plane to fully travel across the runway or other stuff
-        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
         // Signal that the runway is clear
         _currentRunway->runwayClear();
