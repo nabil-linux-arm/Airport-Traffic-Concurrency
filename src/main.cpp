@@ -14,14 +14,6 @@ int main()
 {
     srand(time(0));
 
-    // auto landing_runway = std::make_shared<Runway>(); // OR
-    // auto boeing = std::make_shared<Airplane>();
-    // boeing->setCurrentRunway(landing_runway);
-
-    // boeing->simulate();
-    // landing_runway->simulate();
-
-
     // Initialise simulation
     auto landing_runway = std::make_shared<Runway>(); 
     auto port_runway = std::make_shared<Port>(5); 
