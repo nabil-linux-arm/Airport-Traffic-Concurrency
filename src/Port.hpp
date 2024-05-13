@@ -2,27 +2,43 @@
 #define PORT_H 
 
 #include "AirportObject.hpp"
+#include "Runway.hpp"
+
+#include <vector>
 
 class Airplane;
 class Runway;
 
-class Port : public AirportObject
+class Terminal : AirportObject
+{
+    public:
+        void startRandomWait(double min_ms, double max_ms); // Generates random delay and starts a timer in ms for the airplane to wait in port.
+};
+
+class Port : public Runway 
 {
     public:
         Port();
+        Port(int n_ports);
 
-        bool isPortOccupied() { return _portOccupied; }
-        void dockAirplane(std::shared_ptr<Airplane> airplane); // Add airplane to the dock
-        // TODO: Think about the behavoiours of the port
+        void simulate();
+        void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
+
+        int getPortCount();
+        void incPortCount();
+        void decPortCount();
 
     private:
-        // TODO: Need to think about waiting functionality
-        void startRandomWait(double min_ms, double max_ms); // Generates random delay and starts a timer in ms for the airplane to wait in port.
-        void timerInterrupt();
+        void processPortQueue();
 
+        WaitingAirplanes _waitingPortQueue;
         bool _portOccupied;  // Signal whether the port occupied or not (1 port to 1 airplane)
         std::shared_ptr<Airplane> _dockedAirplane;   // Airplane currently occupying the port
         std::shared_ptr<Runway> _runway; // Runway the port is attached to
+        int _port_count;
+        std::mutex _count_mtx;
+
+        RunwayType _type;
 
 };
 

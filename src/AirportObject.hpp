@@ -9,7 +9,6 @@ enum ObjectType
 {
     airplane,
     runway,
-    port,
     noObject
 };
 

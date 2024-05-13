@@ -7,6 +7,12 @@
 #include <memory>
 #include "AirportObject.hpp"
 
+enum RunwayType
+{
+    landing,
+    port
+};
+
 class Airplane;
 
 class WaitingAirplanes
@@ -35,8 +41,8 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
 
         // Behavior functions
         void simulate();
-        void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
-        void permitAirplaneIn();    // Pop the first airplane off the queue and permit it into runway
+        virtual void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
+
         void runwayClear();         // Signal to runway that the plane has left the runway
 
         std::shared_ptr<Runway> getExitRunway() { return _exitRunway; }
@@ -48,20 +54,22 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         bool getIsLandingRunway() { return _isLandingRunway; }
 
         std::shared_ptr<Runway> get_shared_this() { return shared_from_this(); }
+    
+    protected:
+        WaitingAirplanes _waitingQueue;
+        void processAirplaneQueue();
 
     private:
-        void processAirplaneQueue();
+
         void setIsBlocked(bool blocked) { _isBlocked = blocked; }
 
         double _length;                        // Length of the Runway
         std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one
-        WaitingAirplanes _waitingQueue;
         bool _isBlocked;
         bool _isLandingRunway;                // A quick variable to simulate the flight time of the airplane
                                               // This variable is shared with multiple threads without mutex (unsafe),
                                               // However, the variable does not change and is constant throughout the
                                               // simulation.
-
 };
 
 #endif
