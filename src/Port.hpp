@@ -38,7 +38,7 @@ class Port : public Runway
         int _port_count;
         std::mutex _count_mtx;
 
-        RunwayType _type;
+        RunwayType _runway_type;
 
 };
 

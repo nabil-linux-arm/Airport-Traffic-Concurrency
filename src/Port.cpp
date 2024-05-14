@@ -3,13 +3,17 @@
 
 Port::Port()
 {
-    _type = port;
+    _runway_type = port;
     _port_count = 0;
+    _type = runway;
+    _length = 40.0;
 }
 
 Port::Port(int n_ports) : _port_count(n_ports)
 {
-    _type = port;
+    _runway_type = port;
+    _type = runway;
+    _length = 40.0;
 }
 
 void Port::simulate()
