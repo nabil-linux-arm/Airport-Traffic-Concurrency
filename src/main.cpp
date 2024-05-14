@@ -13,14 +13,21 @@ void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Ai
 int main()
 {
     srand(time(0));
+    int num_plane = 0;
+    int num_ports = 0;
+
+    // Get number of planes
+    std::cout << "Starting simulation ..." << std::endl;
+    std::cout << "Number of Planes: ";
+    std::cin >> num_plane;
+    std::cout << "Planes: " << num_plane << "\n\n";
 
     // Initialise simulation
     auto landing_runway = std::make_shared<Runway>(); 
     auto port_runway = std::make_shared<Port>(5); 
     std::vector< std::shared_ptr<Airplane> > airplanes;
-
     
-    createAirport(landing_runway, airplanes, 5);
+    createAirport(landing_runway, airplanes, num_plane);
 
     // Set exit ruways (this one will be cyclic)
     landing_runway->setExitRunway(port_runway);
