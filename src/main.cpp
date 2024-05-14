@@ -27,24 +27,28 @@ int main()
 
     // ------ Initialise simulation ------- //
     auto landing_runway = std::make_shared<Runway>(); 
+    auto port_runway = std::make_shared<Runway>(); 
     // auto port_runway = std::make_shared<Port>(5); 
     std::vector< std::shared_ptr<Airplane> > airplanes;
     std::vector< std::shared_ptr<Runway> > runways;
 
     runways.push_back(landing_runway);
-    // runways.push_back(port_runway);
+    runways.push_back(port_runway);
     
     createAirport(landing_runway, airplanes, num_plane);
 
     // Set exit ruways (this one will be cyclic)
     landing_runway->setPosition(1430, 625);
     landing_runway->setLength(500);
-    // landing_runway->setExitRunway(port_runway);
-    // port_runway->setExitRunway(landing_runway);
+    landing_runway->setExitRunway(port_runway);
+
+    port_runway->setPosition(1930, 625);
+    port_runway->setLength(500);
+    port_runway->setExitRunway(landing_runway);
 
     // ------- Begin simulation -------- //
     landing_runway->simulate();
-    // port_runway->simulate();
+    port_runway->simulate();
     std::for_each(airplanes.begin(), airplanes.end(), [](std::shared_ptr<Airplane> &a)
     {
         a->simulate();
@@ -69,11 +73,6 @@ int main()
     graphics->setAirportObjects(airportObjects);
     graphics->simulate();
 
-    // Needed to keep the main thread for leaving scope to early thereby destroying the object
-    // while(true) 
-    // {
-
-    // }
     return 0;
 }
 

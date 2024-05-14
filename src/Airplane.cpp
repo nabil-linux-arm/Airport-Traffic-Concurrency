@@ -19,7 +19,7 @@ Airplane::Airplane()
     // _port = nullptr;
     _currentRunway = nullptr;
     _type = airplane;
-    _speed = 50; // m/s
+    _speed = 100; // m/s
     _portAssigned = false;
 }
 
@@ -51,6 +51,7 @@ void Airplane::simulate()
 void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 {
     _currentRunway = runway;
+    _posRunway = 0.0;
 }
 
 void Airplane::setNextRunway(std::shared_ptr<Runway> runway)
@@ -75,13 +76,21 @@ void Airplane::move()
     while (true)
     {
         // sleep at every iteration to reduce CPU usage
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
         // compute time difference to stop watch
         long timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastUpdate).count();
 
         if (timeSinceLastUpdate >= cycleDuration)
         {
+            // check wether halting position in front of destination has been reached
+            if (!hasEnteredRunway)
+            {
+                _currentRunway->addAirplaneToQueue(get_shared_this());
+
+                hasEnteredRunway = true;
+            }
+
             // update position with a constant velocity motion model
             _posRunway += _speed * timeSinceLastUpdate / 1000;
 
@@ -114,48 +123,11 @@ void Airplane::move()
             this->setPosition(xv, yv);
 
             lck.lock();
+            // std::cout << "Pos: " << dx << " "<< dy << std::endl;
             // std::cout << "Pos: " << xv << " "<< yv << std::endl;
-            std::cout << "Completion: " << completion << std::endl;
+            // std::cout << "Completion: " << completion << " Position in Runway: " << _posRunway << std::endl;
             lck.unlock();
 
-            // if (_currentRunway->getIsLandingRunway() == true)
-            // {
-            //     // Timer for when the airplane is in the air
-            //     startTimer(MIN_DELAY, MAX_DELAY);
-            // }
-            // _currentRunway->addAirplaneToQueue(get_shared_this());
-
-            // check wether halting position in front of destination has been reached
-            if (completion >= 0.9 && !hasEnteredRunway)
-            {
-                // _currentRunway->addAirplaneToQueue(get_shared_this());
-                if(this->_nextRunway != nullptr)
-                {
-                    _nextRunway->addAirplaneToQueue(get_shared_this());
-                }
-
-                // slow down and set intersection flag
-                _speed /= 10.0;
-                hasEnteredRunway = true;
-            }
-
-            if (completion >= 1.0 && hasEnteredRunway)
-            {
-                if (this->_nextRunway != nullptr)
-                {
-                    _currentRunway = _nextRunway;
-                    _nextRunway = _nextRunway->getExitRunway();
-                }
-                hasEnteredRunway = false;
-            }
-
-            lastUpdate = std::chrono::system_clock::now();
-
-            // // Simulates time it takes for a plane to fully travel across the runway or other stuff
-            // std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-
-            // // Signal that the runway is clear
-            // _currentRunway->runwayClear();
 
             // // If Port is assigned
             // if(this->isPortAssigned() == true)
@@ -164,16 +136,25 @@ void Airplane::move()
             //     this->setPortAssigned(false);
 
             //     // Convert to derived Port class
-            //     std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_currentRunway);
+            //     std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
             //     runway_port->incPortCount();
             // }
 
-            // // Set new runway as next runway
-            // if (_currentRunway->getExitRunway() != nullptr) 
-            // {
-            //     _currentRunway = _currentRunway->getExitRunway();
-            // }
+            if (completion >= 1.0 && hasEnteredRunway)
+            {
+                // Signal that the runway is clear
+                _currentRunway->runwayClear();
+                hasEnteredRunway = false;
 
+                if(_currentRunway->getExitRunway() != nullptr)
+                {
+                    setCurrentRunway(_currentRunway->getExitRunway());
+                }
+
+
+            }
+
+            lastUpdate = std::chrono::system_clock::now();
         }
     }
 }                   
