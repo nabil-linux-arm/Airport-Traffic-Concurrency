@@ -58,18 +58,19 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
     protected:
         WaitingAirplanes _waitingQueue;
         void processAirplaneQueue();
+        double _length;                        // Length of the Runway
 
     private:
 
         void setIsBlocked(bool blocked) { _isBlocked = blocked; }
 
-        double _length;                        // Length of the Runway
         std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one
         bool _isBlocked;
         bool _isLandingRunway;                // A quick variable to simulate the flight time of the airplane
                                               // This variable is shared with multiple threads without mutex (unsafe),
                                               // However, the variable does not change and is constant throughout the
                                               // simulation.
+        
 };
 
 #endif

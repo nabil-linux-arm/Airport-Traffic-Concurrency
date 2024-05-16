@@ -34,17 +34,21 @@ void WaitingAirplanes::permitEntry()
 
 Runway::Runway()
 {
-    _length = 40.0;
+    _length = 100.0;
     _isBlocked = false;
     _isLandingRunway = false;
     _exitRunway = nullptr;
+
+    _type = ObjectType::runway;
 }
 
 Runway::Runway(bool is_landing_runway) : _isLandingRunway(is_landing_runway)
 {
-    _length = 40.0;
+    _length = 100.0;
     _isBlocked = false;
     _exitRunway = nullptr;
+
+    _type = ObjectType::runway;
 }
 
 Runway::~Runway()

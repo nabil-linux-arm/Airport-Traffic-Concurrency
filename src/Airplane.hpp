@@ -17,6 +17,8 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
         // Behaviour functions
         void simulate();
         void setCurrentRunway(std::shared_ptr<Runway> runway);
+        void setNextRunway(std::shared_ptr<Runway> runway);
+        std::shared_ptr<Runway> getNextRunway() { return _nextRunway; }
 
         bool isPortAssigned() { return _portAssigned; }
         void setPortAssigned(bool have_port) { _portAssigned = have_port; }
@@ -34,6 +36,7 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
         bool _portAssigned;
         // std::shared_ptr<Port> _port;           // Port the Airplane is currently docked at (Undefined when not)
         std::shared_ptr<Runway> _currentRunway;   // The runway that the Airplane is currently waiting to enter
+        std::shared_ptr<Runway> _nextRunway;   // The runway that the Airplane is currently heading towards
         double _posRunway;                     // Position of Airplane on runway
         double _speed;                         // Speed of Airplane on runway
 
