@@ -14,6 +14,7 @@ Port::Port(int n_ports) : _port_count(n_ports)
     _runway_type = port;
     _type = runway;
     _length = 40.0;
+    _const_port_count = n_ports;
 }
 
 void Port::simulate()
@@ -101,4 +102,9 @@ void Port::decPortCount()
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
     _port_count--; 
+}
+
+int Port::getPortPosition()
+{
+    return _const_port_count - getPortCount();
 }

@@ -28,6 +28,8 @@ class Port : public Runway
         void incPortCount();
         void decPortCount();
 
+        int getPortPosition();
+
     private:
         void processPortQueue();
 
@@ -35,7 +37,8 @@ class Port : public Runway
         bool _portOccupied;  // Signal whether the port occupied or not (1 port to 1 airplane)
         std::shared_ptr<Airplane> _dockedAirplane;   // Airplane currently occupying the port
         std::shared_ptr<Runway> _runway; // Runway the port is attached to
-        int _port_count;
+        int _port_count;             // Number of ports available
+        int _const_port_count;       // Number of ports assigned
         std::mutex _count_mtx;
 
         RunwayType _runway_type;

@@ -47,7 +47,7 @@ int main()
     port_runway->setExitRunway(exit_runway);
 
     exit_runway->setPosition(1930, 1125);
-    exit_runway->setLength(500);
+    exit_runway->setLength(800);
     exit_runway->setExitRunway(landing_runway);
 
     createAirport(landing_runway, airplanes, num_plane);

@@ -91,23 +91,6 @@ void Airplane::move()
                 hasEnteredRunway = true;
             }
 
-            // ------- If Airplane is on Port Runway ------- //
-            if(this->isPortAssigned() == true)
-            {
-                // Wait simulation of the port
-                startTimer(2000, 10000);
-
-
-                // Signal that it is finished with the port
-                this->setPortAssigned(false);
-
-                // Convert to derived Port class
-                std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
-
-                // Make available the current port
-                runway_port->incPortCount();
-            }
-
             // ------ Compute position on Runway and determine next position ------ //
             // update position with a constant velocity motion model
             _posRunway += _speed * timeSinceLastUpdate / 1000;
@@ -133,18 +116,36 @@ void Airplane::move()
                 i2->getPosition(x2, y2);
             }
 
+
             dx = x2 - x1;
             dy = y2 - y1;
             // l = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (x1 - x2));
             xv = x1 + completion * dx; // new position based on line equation in parameter form
             yv = y1 + completion * dy;
+
             this->setPosition(xv, yv);
 
-            lck.lock();
+            // lck.lock();
             // std::cout << "Pos: " << dx << " "<< dy << std::endl;
             // std::cout << "Pos: " << xv << " "<< yv << std::endl;
             // std::cout << "Completion: " << completion << " Position in Runway: " << _posRunway << std::endl;
-            lck.unlock();
+            // lck.unlock();
+
+            // ------- If Airplane is on Port Runway ------- //
+            if(this->isPortAssigned() == true)
+            {
+                // Convert to derived Port class
+                std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
+
+                // Wait simulation of the port
+                startTimer(2000, 10000);
+
+                // Signal that it is finished with the port
+                this->setPortAssigned(false);
+
+                // Make available the current port
+                runway_port->incPortCount();
+            }
 
             // ------- Airplane has reached the end of the runway -------- //
             if (completion >= 1.0 && hasEnteredRunway)
