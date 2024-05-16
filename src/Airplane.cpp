@@ -76,14 +76,14 @@ void Airplane::move()
     while (true)
     {
         // sleep at every iteration to reduce CPU usage
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         // compute time difference to stop watch
         long timeSinceLastUpdate = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - lastUpdate).count();
 
         if (timeSinceLastUpdate >= cycleDuration)
         {
-            // check wether halting position in front of destination has been reached
+            // ------ Airplane first enters the queue before being allowed too move ----- //
             if (!hasEnteredRunway)
             {
                 _currentRunway->addAirplaneToQueue(get_shared_this());
@@ -91,6 +91,24 @@ void Airplane::move()
                 hasEnteredRunway = true;
             }
 
+            // ------- If Airplane is on Port Runway ------- //
+            if(this->isPortAssigned() == true)
+            {
+                // Wait simulation of the port
+                startTimer(2000, 10000);
+
+
+                // Signal that it is finished with the port
+                this->setPortAssigned(false);
+
+                // Convert to derived Port class
+                std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
+
+                // Make available the current port
+                runway_port->incPortCount();
+            }
+
+            // ------ Compute position on Runway and determine next position ------ //
             // update position with a constant velocity motion model
             _posRunway += _speed * timeSinceLastUpdate / 1000;
 
@@ -128,18 +146,7 @@ void Airplane::move()
             // std::cout << "Completion: " << completion << " Position in Runway: " << _posRunway << std::endl;
             lck.unlock();
 
-
-            // // If Port is assigned
-            // if(this->isPortAssigned() == true)
-            // {
-            //     startTimer(2000, 10000);
-            //     this->setPortAssigned(false);
-
-            //     // Convert to derived Port class
-            //     std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
-            //     runway_port->incPortCount();
-            // }
-
+            // ------- Airplane has reached the end of the runway -------- //
             if (completion >= 1.0 && hasEnteredRunway)
             {
                 // Signal that the runway is clear
@@ -150,8 +157,6 @@ void Airplane::move()
                 {
                     setCurrentRunway(_currentRunway->getExitRunway());
                 }
-
-
             }
 
             lastUpdate = std::chrono::system_clock::now();

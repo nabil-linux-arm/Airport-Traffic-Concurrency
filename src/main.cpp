@@ -27,15 +27,15 @@ int main()
 
     // ------ Initialise simulation ------- //
     auto landing_runway = std::make_shared<Runway>(); 
-    auto port_runway = std::make_shared<Runway>(); 
+    auto port_runway = std::make_shared<Port>(3); 
+    auto exit_runway = std::make_shared<Runway>();
     // auto port_runway = std::make_shared<Port>(5); 
     std::vector< std::shared_ptr<Airplane> > airplanes;
     std::vector< std::shared_ptr<Runway> > runways;
 
     runways.push_back(landing_runway);
     runways.push_back(port_runway);
-    
-    createAirport(landing_runway, airplanes, num_plane);
+    runways.push_back(exit_runway);
 
     // Set exit ruways (this one will be cyclic)
     landing_runway->setPosition(1430, 625);
@@ -44,11 +44,19 @@ int main()
 
     port_runway->setPosition(1930, 625);
     port_runway->setLength(500);
-    port_runway->setExitRunway(landing_runway);
+    port_runway->setExitRunway(exit_runway);
+
+    exit_runway->setPosition(1930, 1125);
+    exit_runway->setLength(500);
+    exit_runway->setExitRunway(landing_runway);
+
+    createAirport(landing_runway, airplanes, num_plane);
 
     // ------- Begin simulation -------- //
     landing_runway->simulate();
     port_runway->simulate();
+    exit_runway->simulate();
+
     std::for_each(airplanes.begin(), airplanes.end(), [](std::shared_ptr<Airplane> &a)
     {
         a->simulate();
