@@ -3,18 +3,27 @@
 
 Port::Port()
 {
-    _runway_type = port;
-    _port_count = 0;
+    setRunwayType(port);
+    _port_count = 1;
     _type = runway;
     _length = 40.0;
+    _const_port_count = 1;
+
+    _port_pool.push_back(1);
 }
 
 Port::Port(int n_ports) : _port_count(n_ports)
 {
-    _runway_type = port;
+    setRunwayType(port);
     _type = runway;
     _length = 40.0;
     _const_port_count = n_ports;
+
+    // Fill up the port pool
+    for (int i = n_ports; i > 0; i--)
+    {
+        _port_pool.push_back(i);
+    }
 }
 
 void Port::simulate()
@@ -25,10 +34,11 @@ void Port::simulate()
     _threads.emplace_back(std::thread(&Port::processPortQueue, this));
 }
 
-void Port::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
+// Adds airplane to Queue to wait for Port assignment
+void Port::addAirplaneToPortQueue(std::shared_ptr<Airplane> airplane)
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[PORT %d] - ENTER QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
+    printf("[PORT #%d] - Queue in Runway: AIRPLANE #%d\n", this->getID(), airplane->getID());
     lck.unlock();
 
     // (1) First the airplane must have a port assigned to him before moving on
@@ -38,18 +48,13 @@ void Port::addAirplaneToQueue(std::shared_ptr<Airplane> airplane)
     _waitingPortQueue.pushBack(airplane, std::move(promiseAssignPort));
     
     futureAirplaneAssignedPort.wait();
-    airplane->setPortAssigned(true);
 
-    // (2) Join the Runway queue
-    std::promise<void> promiseAllowAirplaneToEnter;
-    std::future<void> futureAllowAirplaneToEnter = promiseAllowAirplaneToEnter.get_future();
-
-    _waitingQueue.pushBack(airplane, std::move(promiseAllowAirplaneToEnter));
-    
-    futureAllowAirplaneToEnter.wait();
+    // Assign port to the plane
+    airplane->setPortID(this->getPort());
 
     lck.lock();
-    printf("[PORT %d] - EXIT QUEUE: AIRPLANE #%d\n", this->getID(), airplane->getID());
+    printf("[PORT #%d] - Enter Runway: AIRPLANE #%d\n", this->getID(), airplane->getID());
+    // printf("[PORT #%d] - Current Port count: %d\n", getID(),this->getPortCount());
 }
 
 // Generates random delay and starts a timer in ms for the airplane to wait in port.
@@ -58,15 +63,16 @@ void Terminal::startRandomWait(double min_ms, double max_ms)
     int range = max_ms - min_ms;
     int timeDelay = (rand() % abs(range)) + min_ms;
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[PORT %d] - Start Timer: %d ms\n", this->getID(), timeDelay);
+    printf("[PORT #%d] - Start Timer: %d ms\n", this->getID(), timeDelay);
     lck.unlock();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
 }
+
 void Port::processPortQueue()
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[PORT %d] - START PROCESS PORT QUEUE\n",getID());
+    printf("[PORT #%d] - Starting port queue processing\n",getID());
     lck.unlock();
 
     // Continually process the queue
@@ -76,11 +82,8 @@ void Port::processPortQueue()
 
         if (_waitingPortQueue.getSize() > 0 && getPortCount() > 0) 
         {
-            lck.lock();
-            printf("[PORT %d] - PORT COUNT: %d\n", getID(),this->getPortCount());
-            lck.unlock();
+            // this->decPortCount();
 
-            this->decPortCount();
             // Let the airplane proceed into the runway
             _waitingPortQueue.permitEntry();
         }
@@ -88,23 +91,56 @@ void Port::processPortQueue()
 
 }
 
+// Port Management
 int Port::getPortCount()
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
-    return _port_count; 
+    // return _port_count; 
+    return _port_pool.size();
 }
+
 void Port::incPortCount() 
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
     _port_count++; 
 }
+
 void Port::decPortCount() 
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
     _port_count--; 
 }
 
-int Port::getPortPosition()
+// int Port::getPort()
+// {
+//     std::lock_guard<std::mutex> lock(_count_mtx);
+//     _port_count--;
+//     return _const_port_count - _port_count;
+// }
+
+int Port::getPort()
 {
-    return _const_port_count - getPortCount();
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    int free_port = 0; 
+    // Safety feature to prevent undefined behaviour
+    if (_port_pool.size() > 0)
+    {
+        free_port = _port_pool.back();
+        _port_pool.pop_back();
+    }
+
+    return free_port;
+}
+
+void Port::freePort(int port_id)
+{
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    _port_pool.push_back(port_id);
+}
+
+// Returns the port position in the runway
+void Port::getPortPosition(double &x, double &y, int port_id)
+{
+    x = _posX + 200;
+    y = _posY + (port_id * 150);
 }
