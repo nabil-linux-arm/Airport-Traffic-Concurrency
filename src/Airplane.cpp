@@ -20,7 +20,7 @@ Airplane::Airplane()
     _currentRunway = nullptr;
     _type = airplane;
     _speed = 100; // m/s
-    _portAssigned = false;
+    _portID = 0;
 }
 
 Airplane::~Airplane()
@@ -35,7 +35,7 @@ void Airplane::simulate()
     if (_currentRunway == nullptr) 
     {
         std::unique_lock<std::mutex> lck(_cout_mtx);
-        printf("[Airplane %d] - ERROR: runway not set\n", this->getID());
+        printf("[AIRPLANE #%d] - ERROR: runway not set\n", this->getID());
         lck.unlock();
         return;
     }
@@ -67,6 +67,8 @@ void Airplane::move()
     lck.unlock();
 
     bool hasEnteredRunway = false;
+    bool hasEnteredPort = false;
+
     double cycleDuration = 1; // duration of a single simulation cycle in ms
     std::chrono::time_point<std::chrono::system_clock> lastUpdate;
 
@@ -83,82 +85,119 @@ void Airplane::move()
 
         if (timeSinceLastUpdate >= cycleDuration)
         {
-            // ------ Airplane first enters the queue before being allowed too move ----- //
+            // ------- WAIT AND ENTER STATES ------- //
             if (!hasEnteredRunway)
             {
-                _currentRunway->addAirplaneToQueue(get_shared_this());
+                position source;
+                position destination;
+                RunwayType current_type = _currentRunway->getRunwayType();
+
+                if (current_type == port && !hasEnteredPort)
+                {
+                    // ----- BEFORE PORT VISIT ------ //
+                    std::shared_ptr<Port> port_runway = std::dynamic_pointer_cast<Port>(_currentRunway);
+
+                    port_runway->addAirplaneToPortQueue(this->get_shared_this());
+
+                    port_runway->addAirplaneToQueue(this->get_shared_this());
+                    
+                    // Set src and destination coordiantes
+                    port_runway->getPosition(source.x, source.y);
+                    port_runway->getPortPosition(destination.x, destination.y, this->getPortID());
+
+                    setStartPosition(source);
+                    setDestinationPosition(destination); 
+                }
+                else if (hasEnteredPort)
+                {
+                    // ----- AFTER PORT VISIT ------ //
+                    _currentRunway->addAirplaneToQueue(this->get_shared_this());
+
+                    // Set src and destination coordinates
+                    _currentRunway->getExitRunway()->getPosition(destination.x, destination.y);
+
+                    setDestinationPosition(destination);
+                }
+                else if (current_type != port)
+                {
+                    // ----- RUNWAY IS NOT A PORT ------ //
+                    _currentRunway->addAirplaneToQueue(this->get_shared_this());
+
+                    // Set src and destination coordinates
+                    _currentRunway->getPosition(source.x, source.y);
+                    _currentRunway->getExitRunway()->getPosition(destination.x, destination.y);
+
+                    setStartPosition(source);
+                    setDestinationPosition(destination); 
+                }
+                
+                // // ----- RUNWAY IS NOT A PORT ------ //
+                // _currentRunway->addAirplaneToQueue(get_shared_this());
+
+                // // Set src and destination coordinates
+                // _currentRunway->getPosition(source.x, source.y);
+                // _currentRunway->getExitRunway()->getPosition(destination.x, destination.y);
+
+                // setStartPosition(source);
+                // setDestinationPosition(destination); 
 
                 hasEnteredRunway = true;
             }
 
-            // ------ Compute position on Runway and determine next position ------ //
+            // ----- CALCULATE POSITION VECTOR ------- //
             // update position with a constant velocity motion model
             _posRunway += _speed * timeSinceLastUpdate / 1000;
 
             // compute completion rate of current street
-            double completion = _posRunway / _currentRunway->getLength();
+            double completion = _posRunway / this->calculateDistance();
 
-            // compute current pixel position on street based on driving direction
-            std::shared_ptr<Runway> i1, i2;
-            i2 = _currentRunway->getExitRunway();
-            // i1 = i2->getID() == _currentRunway->getExitRunway()->getID() ? _currStreet->getOutIntersection() : _currStreet->getInIntersection();
-            i1 = _currentRunway;
+            double xv, yv, dx, dy, l;
 
-            double x1, y1, x2, y2, xv, yv, dx, dy, l;
-            i1->getPosition(x1, y1);
-            if (i2 == nullptr)
-            {
-                x2 = x1 + _currentRunway->getLength();
-                y2 = y1;
-            }
-            else
-            {
-                i2->getPosition(x2, y2);
-            }
-
-
-            dx = x2 - x1;
-            dy = y2 - y1;
-            // l = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (x1 - x2));
-            xv = x1 + completion * dx; // new position based on line equation in parameter form
-            yv = y1 + completion * dy;
-
-            this->setPosition(xv, yv);
+            dx = _destinationPos.x - _startPos.x;
+            dy = _destinationPos.y - _startPos.y;
+            xv = _startPos.x + completion * dx; // new position based on line equation in parameter form
+            yv = _startPos.y + completion * dy;
 
             // lck.lock();
-            // std::cout << "Pos: " << dx << " "<< dy << std::endl;
-            // std::cout << "Pos: " << xv << " "<< yv << std::endl;
-            // std::cout << "Completion: " << completion << " Position in Runway: " << _posRunway << std::endl;
+            // std::cout << "Current src: " << _startPos.x << " " << _startPos.y << std::endl;
+            // std::cout << "Current destination: " << _destinationPos.x << " " << _destinationPos.y << std::endl;
+            // std::cout << "Completion: " << completion << std::endl;
             // lck.unlock();
 
-            // ------- If Airplane is on Port Runway ------- //
-            if(this->isPortAssigned() == true)
-            {
-                // Convert to derived Port class
-                std::shared_ptr<Port> runway_port = std::dynamic_pointer_cast<Port>(_nextRunway);
+            // Finally set the correct position
+            this->setPosition(xv, yv);
 
-                // Wait simulation of the port
-                startTimer(2000, 10000);
-
-                // Signal that it is finished with the port
-                this->setPortAssigned(false);
-
-                // Make available the current port
-                runway_port->incPortCount();
-            }
-
-            // ------- Airplane has reached the end of the runway -------- //
+            // ------- ACTION TO TAKE ONCE DESTINATION REACHED ------ //
             if (completion >= 1.0 && hasEnteredRunway)
             {
-                // Signal that the runway is clear
                 _currentRunway->runwayClear();
                 hasEnteredRunway = false;
 
-                if(_currentRunway->getExitRunway() != nullptr)
+                if (this->getPortID() == 0)
                 {
-                    setCurrentRunway(_currentRunway->getExitRunway());
+                    // ------ Reached exit of runway ------ //
+                    _currentRunway = _currentRunway->getExitRunway();
+                    hasEnteredPort = false;
                 }
+                else
+                {
+                    // ----- Reached port ------ //
+                    std::shared_ptr<Port> port_runway = std::dynamic_pointer_cast<Port>(_currentRunway);
+                    position start;
+                    // Simulate processing in the port
+                    this->startTimer(MAX_DELAY, MAX_DELAY*2);
+
+                    port_runway->getPortPosition(start.x, start.y, this->getPortID());
+                    this->setStartPosition(start);
+
+                    // Reset all port parameters to default
+                    this->setPortID(0);
+                    hasEnteredPort = true;
+                    port_runway->incPortCount(); 
+                }
+                
             }
+
 
             lastUpdate = std::chrono::system_clock::now();
         }
@@ -166,7 +205,6 @@ void Airplane::move()
 }                   
 
 void Airplane::moveToPort(int port_id) {}   
-bool Airplane::isDestinationReached() {}    
 
 void Airplane::startTimer(int min, int max)
 {
@@ -174,8 +212,16 @@ void Airplane::startTimer(int min, int max)
     int range = max - min;
     int timeDelay = (rand() % abs(range)) + min;
     std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Airplane %d] - Start Timer: %d ms\n", this->getID(), timeDelay);
+    printf("[AIRPLANE #%d] - Start Timer: %d ms\n", this->getID(), timeDelay);
     lck.unlock();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
+}
+
+double Airplane::calculateDistance()
+{
+    double x_length = _startPos.x - _destinationPos.x;
+    double y_length = _startPos.y - _destinationPos.y;
+    double length = sqrt((x_length*x_length) + (y_length*y_length)); 
+    return length;
 }
