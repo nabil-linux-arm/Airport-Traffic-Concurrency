@@ -8,6 +8,8 @@ Port::Port()
     _type = runway;
     _length = 40.0;
     _const_port_count = 1;
+
+    _port_pool.push_back(1);
 }
 
 Port::Port(int n_ports) : _port_count(n_ports)
@@ -16,6 +18,12 @@ Port::Port(int n_ports) : _port_count(n_ports)
     _type = runway;
     _length = 40.0;
     _const_port_count = n_ports;
+
+    // Fill up the port pool
+    for (int i = n_ports; i > 0; i--)
+    {
+        _port_pool.push_back(i);
+    }
 }
 
 void Port::simulate()
@@ -46,7 +54,7 @@ void Port::addAirplaneToPortQueue(std::shared_ptr<Airplane> airplane)
 
     lck.lock();
     printf("[PORT #%d] - Enter Runway: AIRPLANE #%d\n", this->getID(), airplane->getID());
-    printf("[PORT #%d] - Current Port count: %d\n", getID(),this->getPortCount());
+    // printf("[PORT #%d] - Current Port count: %d\n", getID(),this->getPortCount());
 }
 
 // Generates random delay and starts a timer in ms for the airplane to wait in port.
@@ -87,7 +95,8 @@ void Port::processPortQueue()
 int Port::getPortCount()
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
-    return _port_count; 
+    // return _port_count; 
+    return _port_pool.size();
 }
 
 void Port::incPortCount() 
@@ -102,16 +111,36 @@ void Port::decPortCount()
     _port_count--; 
 }
 
+// int Port::getPort()
+// {
+//     std::lock_guard<std::mutex> lock(_count_mtx);
+//     _port_count--;
+//     return _const_port_count - _port_count;
+// }
+
 int Port::getPort()
 {
     std::lock_guard<std::mutex> lock(_count_mtx);
-    _port_count--;
-    return _const_port_count - _port_count;
+    int free_port = 0; 
+    // Safety feature to prevent undefined behaviour
+    if (_port_pool.size() > 0)
+    {
+        free_port = _port_pool.back();
+        _port_pool.pop_back();
+    }
+
+    return free_port;
+}
+
+void Port::freePort(int port_id)
+{
+    std::lock_guard<std::mutex> lock(_count_mtx);
+    _port_pool.push_back(port_id);
 }
 
 // Returns the port position in the runway
 void Port::getPortPosition(double &x, double &y, int port_id)
 {
     x = _posX + 200;
-    y = _posY + (port_id * 100);
+    y = _posY + (port_id * 150);
 }

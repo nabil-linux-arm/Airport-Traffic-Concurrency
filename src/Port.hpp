@@ -26,6 +26,8 @@ class Port : public Runway
         void addAirplaneToPortQueue(std::shared_ptr<Airplane> airplane);
 
         int getPortCount();
+        void freePort(int port_id);
+
         void incPortCount();
         void decPortCount();
 
@@ -43,6 +45,8 @@ class Port : public Runway
         int _port_count;             // Number of ports available
         int _const_port_count;       // Number of ports assigned
         std::mutex _count_mtx;
+        
+        std::vector<int> _port_pool;  // List of ports available for assignment
 
 };
 

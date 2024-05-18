@@ -19,7 +19,7 @@ Airplane::Airplane()
     // _port = nullptr;
     _currentRunway = nullptr;
     _type = airplane;
-    _speed = 100; // m/s
+    _speed = 150; // m/s
     _portID = 0;
 }
 
@@ -185,13 +185,15 @@ void Airplane::move()
                     std::shared_ptr<Port> port_runway = std::dynamic_pointer_cast<Port>(_currentRunway);
                     position start;
                     // Simulate processing in the port
-                    this->startTimer(MAX_DELAY, MAX_DELAY*2);
+                    this->startTimer(MIN_DELAY, MAX_DELAY+2000);
 
                     port_runway->getPortPosition(start.x, start.y, this->getPortID());
                     this->setStartPosition(start);
 
                     // Reset all port parameters to default
+                    port_runway->freePort(this->getPortID());
                     this->setPortID(0);
+
                     hasEnteredPort = true;
                     port_runway->incPortCount(); 
                 }
