@@ -6,18 +6,21 @@ Port::Port()
     setRunwayType(port);
     _port_count = 1;
     _type = runway;
-    _length = 40.0;
-    _const_port_count = 1;
+    setLength(40.0);
 
     _port_pool.push_back(1);
 }
 
+/**
+ * Secondary constructor to define number of ports in port.
+ * 
+ * @param n_ports The number of ports the port object will initialise with.
+*/
 Port::Port(int n_ports) : _port_count(n_ports)
 {
     setRunwayType(port);
     _type = runway;
-    _length = 40.0;
-    _const_port_count = n_ports;
+    setLength(40.0);
 
     // Fill up the port pool
     for (int i = n_ports; i > 0; i--)
@@ -26,6 +29,11 @@ Port::Port(int n_ports) : _port_count(n_ports)
     }
 }
 
+/**
+ * Starts thread for Port.
+ * 
+ * Specifially starts threads for port::processPortQueue() and runway::processAirplaneQueue.
+*/
 void Port::simulate()
 {
     // To manage airplanes waiting for unblocked runway
@@ -34,7 +42,15 @@ void Port::simulate()
     _threads.emplace_back(std::thread(&Port::processPortQueue, this));
 }
 
-// Adds airplane to Queue to wait for Port assignment
+/**
+ * Adds airplane to port waiting queue.
+ * 
+ * Any airplanes that enters the port and have not been assigned a port can be added to 
+ * this queue. Usually started as a seperate thread by the airplane. Airplanes currently 
+ * cannot do anything while waiting in the queue.
+ * 
+ * @param airplane The airplane that wants to dock into an available port.
+*/
 void Port::addAirplaneToPortQueue(std::shared_ptr<Airplane> airplane)
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
@@ -54,21 +70,14 @@ void Port::addAirplaneToPortQueue(std::shared_ptr<Airplane> airplane)
 
     lck.lock();
     printf("[PORT #%d] - Enter Runway: AIRPLANE #%d\n", this->getID(), airplane->getID());
-    // printf("[PORT #%d] - Current Port count: %d\n", getID(),this->getPortCount());
 }
 
-// Generates random delay and starts a timer in ms for the airplane to wait in port.
-void Terminal::startRandomWait(double min_ms, double max_ms)
-{
-    int range = max_ms - min_ms;
-    int timeDelay = (rand() % abs(range)) + min_ms;
-    std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[PORT #%d] - Start Timer: %d ms\n", this->getID(), timeDelay);
-    lck.unlock();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
-}
-
+/**
+ * Main processing function for the port.
+ * 
+ * Continuously check whether there are available ports to be assigned. If so 
+ * it will let an airplane enter the Runway.
+*/
 void Port::processPortQueue()
 {
     std::unique_lock<std::mutex> lck(_cout_mtx);
@@ -82,8 +91,6 @@ void Port::processPortQueue()
 
         if (_waitingPortQueue.getSize() > 0 && getPortCount() > 0) 
         {
-            // this->decPortCount();
-
             // Let the airplane proceed into the runway
             _waitingPortQueue.permitEntry();
         }
@@ -91,7 +98,13 @@ void Port::processPortQueue()
 
 }
 
-// Port Management
+// ----- Port Management ------ //
+
+/**
+ * Getter for the size of the port pool.
+ * 
+ * @return Number of ports available to be assigned to an airplane.
+*/
 int Port::getPortCount()
 { 
     std::lock_guard<std::mutex> lock(_count_mtx);
@@ -99,25 +112,14 @@ int Port::getPortCount()
     return _port_pool.size();
 }
 
-void Port::incPortCount() 
-{ 
-    std::lock_guard<std::mutex> lock(_count_mtx);
-    _port_count++; 
-}
-
-void Port::decPortCount() 
-{ 
-    std::lock_guard<std::mutex> lock(_count_mtx);
-    _port_count--; 
-}
-
-// int Port::getPort()
-// {
-//     std::lock_guard<std::mutex> lock(_count_mtx);
-//     _port_count--;
-//     return _const_port_count - _port_count;
-// }
-
+/**
+ * Getter for the port id from the port pool.
+ * 
+ * Also removes the port id from the port pool thus simulating a limited
+ * resource pool. The port pool is a very primitive type of resource pool.
+ * 
+ * @return Port id that is in the port pool.
+*/
 int Port::getPort()
 {
     std::lock_guard<std::mutex> lock(_count_mtx);
@@ -132,13 +134,25 @@ int Port::getPort()
     return free_port;
 }
 
+/**
+ * Adds a port id back into the port pool.
+ * 
+ * @param port_id The port being returned back to the the port pool.
+*/
 void Port::freePort(int port_id)
 {
     std::lock_guard<std::mutex> lock(_count_mtx);
     _port_pool.push_back(port_id);
 }
 
-// Returns the port position in the runway
+/**
+ * Returns the position of a port relative to the runway and
+ * according to the port's id.
+ * 
+ * @param x X coordinate of the port.
+ * @param y Y coordinate of the port.
+ * @param port_id The port being questioned about it's position.
+*/
 void Port::getPortPosition(double &x, double &y, int port_id)
 {
     // When runway parallel to the x axis

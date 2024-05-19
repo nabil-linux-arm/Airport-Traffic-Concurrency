@@ -182,7 +182,6 @@ void Airplane::move()
                     this->setPortID(0);
 
                     hasEnteredPort = true;
-                    port_runway->incPortCount(); 
                 }
                 
             }
