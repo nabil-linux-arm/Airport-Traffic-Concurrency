@@ -8,16 +8,15 @@
 #include <iostream>
 
 void createAirport(std::shared_ptr<Runway> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes);
-void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes);
+void createAirportObjects(std::vector< std::shared_ptr<Runway> > &runways,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes, std::string &filename);
 
 int main()
 {
     srand(time(0));
     int num_plane = 0;
-    int num_ports = 0;
 
     // Background Image file name:
-    std::string bck_image_name = "../data/paris.jpg";
+    std::string bck_image_name;
 
     // Get number of planes
     std::cout << "Starting simulation ..." << std::endl;
@@ -26,37 +25,16 @@ int main()
     std::cout << "Planes: " << num_plane << "\n\n";
 
     // ------ Initialise simulation ------- //
-    auto landing_runway = std::make_shared<Runway>(); 
-    // auto port_runway = std::make_shared<Runway>(); 
-    auto port_runway = std::make_shared<Port>(3); 
-    auto exit_runway = std::make_shared<Runway>();
-    // auto port_runway = std::make_shared<Port>(5); 
     std::vector< std::shared_ptr<Airplane> > airplanes;
     std::vector< std::shared_ptr<Runway> > runways;
 
-    runways.push_back(landing_runway);
-    runways.push_back(port_runway);
-    runways.push_back(exit_runway);
-
-    // Set exit ruways (this one will be cyclic)
-    landing_runway->setPosition(1430, 625);
-    landing_runway->setLength(500);
-    landing_runway->setExitRunway(port_runway);
-
-    port_runway->setPosition(1930, 625);
-    port_runway->setLength(500);
-    port_runway->setExitRunway(exit_runway);
-
-    exit_runway->setPosition(1930, 1125);
-    exit_runway->setLength(800);
-    exit_runway->setExitRunway(landing_runway);
-
-    createAirport(landing_runway, airplanes, num_plane);
+    createAirportObjects(runways, airplanes, num_plane, bck_image_name);
 
     // ------- Begin simulation -------- //
-    landing_runway->simulate();
-    port_runway->simulate();
-    exit_runway->simulate();
+    std::for_each(runways.begin(), runways.end(), [](std::shared_ptr<Runway> &r)
+    {
+        r->simulate();
+    });
 
     std::for_each(airplanes.begin(), airplanes.end(), [](std::shared_ptr<Airplane> &a)
     {
@@ -96,11 +74,37 @@ void createAirport(std::shared_ptr<Runway> &runway,std::vector< std::shared_ptr<
 
 }
 
-void createAirport(std::shared_ptr<Port> &runway,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes)
+void createAirportObjects(std::vector< std::shared_ptr<Runway> > &runways,std::vector< std::shared_ptr<Airplane> > &airplanes,int nAirplanes, std::string &filename)
 {
+    // Background image for chosen airport
+    filename = "../data/airport_vector_2.jpg";
+
+    // Initialise Runways
+    auto landing_runway = std::make_shared<Runway>(); 
+    auto port_runway = std::make_shared<Port>(4); 
+    auto exit_runway = std::make_shared<Runway>();
+    auto sky_runway = std::make_shared<Runway>(sky);
+
+    runways.push_back(landing_runway);
+    runways.push_back(port_runway);
+    runways.push_back(exit_runway);
+    runways.push_back(sky_runway);
+
+    // Position Runways and set their next runway
+    landing_runway->setPosition(600, 200);
+    port_runway->setPosition(1150, 500);
+    exit_runway->setPosition(2100, 560);
+    sky_runway->setPosition(600, 1400);
+
+    landing_runway->setExitRunway(port_runway);
+    port_runway->setExitRunway(exit_runway);
+    exit_runway->setExitRunway(sky_runway);
+    sky_runway->setExitRunway(landing_runway);
+
+    // Initialise Airplanes
     for (int i = 0; i < nAirplanes; i++)
     {
         airplanes.push_back(std::make_shared<Airplane>());
-        airplanes.at(i)->setCurrentRunway(runway);
+        airplanes.at(i)->setCurrentRunway(runways.at(0));
     }
 }

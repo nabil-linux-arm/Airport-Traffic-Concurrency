@@ -6,29 +6,22 @@
 #include <thread>
 #include <iostream>
 
-// TODO: 
-// - [] Define what the airplane state is intitially 
-// - [] Define some initial checks to make sure the simulation is safe
-// - [] Remove all debugging logic and refactor the code
-
-const int MIN_DELAY = 100;  // milliseconds
-const int MAX_DELAY = 5000; // milliseconds
+const int MIN_DELAY = 100;  // minimum time in milliseconds
+const int MAX_DELAY = 5000; // maximum time in milliseconds
 
 Airplane::Airplane()
 {
-    // _port = nullptr;
     _currentRunway = nullptr;
     _type = airplane;
-    _speed = 150; // m/s
+    _speed = _default_speed = 200; // m/s
     _portID = 0;
 }
 
-Airplane::~Airplane()
-{
-    std::unique_lock<std::mutex> lck(_cout_mtx);
-    printf("[Airplane] - DESTRUCTOR CALLED\n");
-}
-
+/**
+ * Begins airplane thread.
+ * 
+ * Creates a thread for airplane::move() to begin the airplane program.
+*/
 void Airplane::simulate() 
 {
     // Provide some error checking
@@ -40,7 +33,6 @@ void Airplane::simulate()
         return;
     }
 
-    this->setNextRunway(_currentRunway->getExitRunway());
     // Creates a threasd for the move function of this airplane
     // emplace_back is used instead of push because thread objects cannot be copied (done when pushing objects)
     // Sufficient amount of time must pass in order for thread object to increment the shared_ptr
@@ -48,17 +40,22 @@ void Airplane::simulate()
     _threads.emplace_back(std::thread(&Airplane::move, this));
 }
 
+/**
+ * Sets the runway the airplane is currently on.
+ * 
+ * @param runway A shared pointer for a runway object.
+*/
 void Airplane::setCurrentRunway(std::shared_ptr<Runway> runway)
 {
     _currentRunway = runway;
     _posRunway = 0.0;
 }
 
-void Airplane::setNextRunway(std::shared_ptr<Runway> runway)
-{
-    _nextRunway = runway;
-}
-
+/**
+ * Executes the main state machine of the airplane.
+ * 
+ * Executed by airplane::simulate() on a seperate thread. Currently the main states include the Enter, Wait, Port and Exit states.
+*/
 void Airplane::move() 
 {
     // print id of the current thread
@@ -91,6 +88,7 @@ void Airplane::move()
                 position source;
                 position destination;
                 RunwayType current_type = _currentRunway->getRunwayType();
+                _speed = _default_speed;
 
                 if (current_type == port && !hasEnteredPort)
                 {
@@ -129,18 +127,13 @@ void Airplane::move()
 
                     setStartPosition(source);
                     setDestinationPosition(destination); 
+
+                    if (_currentRunway->getExitRunway()->getRunwayType() == RunwayType::sky)
+                    {
+                        _speed += 200;
+                    }
                 }
                 
-                // // ----- RUNWAY IS NOT A PORT ------ //
-                // _currentRunway->addAirplaneToQueue(get_shared_this());
-
-                // // Set src and destination coordinates
-                // _currentRunway->getPosition(source.x, source.y);
-                // _currentRunway->getExitRunway()->getPosition(destination.x, destination.y);
-
-                // setStartPosition(source);
-                // setDestinationPosition(destination); 
-
                 hasEnteredRunway = true;
             }
 
@@ -157,12 +150,6 @@ void Airplane::move()
             dy = _destinationPos.y - _startPos.y;
             xv = _startPos.x + completion * dx; // new position based on line equation in parameter form
             yv = _startPos.y + completion * dy;
-
-            // lck.lock();
-            // std::cout << "Current src: " << _startPos.x << " " << _startPos.y << std::endl;
-            // std::cout << "Current destination: " << _destinationPos.x << " " << _destinationPos.y << std::endl;
-            // std::cout << "Completion: " << completion << std::endl;
-            // lck.unlock();
 
             // Finally set the correct position
             this->setPosition(xv, yv);
@@ -185,7 +172,7 @@ void Airplane::move()
                     std::shared_ptr<Port> port_runway = std::dynamic_pointer_cast<Port>(_currentRunway);
                     position start;
                     // Simulate processing in the port
-                    this->startTimer(MIN_DELAY, MAX_DELAY+2000);
+                    this->startTimer(MAX_DELAY, 20000);
 
                     port_runway->getPortPosition(start.x, start.y, this->getPortID());
                     this->setStartPosition(start);
@@ -195,7 +182,6 @@ void Airplane::move()
                     this->setPortID(0);
 
                     hasEnteredPort = true;
-                    port_runway->incPortCount(); 
                 }
                 
             }
@@ -206,11 +192,19 @@ void Airplane::move()
     }
 }                   
 
-void Airplane::moveToPort(int port_id) {}   
-
+/**
+ * Generates random delay.
+ * 
+ * Sleeps the airplane thread for a random period of time between a set min and max. 
+ * Initially was first used to simulate airplane processing.
+ * 
+ * @param min The minimum delay the airplane will sleep for in milliseconds.
+ * @param max The maximum delay the airplane will sleep for in milliseconds.
+*/
 void Airplane::startTimer(int min, int max)
 {
-    // TODO: Create a limits for min and max
+    // TODO: 
+    // - [] Create a limits for min and max
     int range = max - min;
     int timeDelay = (rand() % abs(range)) + min;
     std::unique_lock<std::mutex> lck(_cout_mtx);
@@ -220,6 +214,14 @@ void Airplane::startTimer(int min, int max)
     std::this_thread::sleep_for(std::chrono::milliseconds(timeDelay));
 }
 
+/**
+ * Calculates the distance between the start and destination.
+ * 
+ * Uses internal variables _startPos and _destinationPos to calculate the 
+ * length/distance between the two points. 
+ * 
+ * @return double type representing the length between start and destination.
+*/
 double Airplane::calculateDistance()
 {
     double x_length = _startPos.x - _destinationPos.x;
@@ -227,3 +229,39 @@ double Airplane::calculateDistance()
     double length = sqrt((x_length*x_length) + (y_length*y_length)); 
     return length;
 }
+
+/**
+ * Setter for airplane starting position.
+ * 
+ * Usually the starting the position is the position of the current runway.
+ * 
+ * @param start A position struct representing the x and y coordinates of the starting position.
+*/
+void Airplane::setStartPosition(position start) { _startPos = start; }
+
+/**
+ * Setter for airplane destination.
+ * 
+ * Additionally resets the position in runway variable.
+ * 
+ * @param destination x and y pixel coordinates of the target destination.
+*/
+void Airplane::setDestinationPosition(position destination)
+{
+    _destinationPos = destination;
+    _posRunway = 0.0;
+}
+
+/**
+ * Setter for port id of port airplane is assigned to.
+ * 
+ * @param port_id The port id of the assigned port.
+*/
+void Airplane::setPortID(int port_id) { _portID = port_id; }
+
+/**
+ * Getter for port id of assigned port.
+ * 
+ * @return non-zero integer represents the port the airplane is assigned to. If zero the airplane is not assigned to a port.
+*/
+int Airplane::getPortID() { return _portID; }
