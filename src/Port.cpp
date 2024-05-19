@@ -78,7 +78,7 @@ void Port::processPortQueue()
     // Continually process the queue
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         if (_waitingPortQueue.getSize() > 0 && getPortCount() > 0) 
         {
@@ -141,6 +141,11 @@ void Port::freePort(int port_id)
 // Returns the port position in the runway
 void Port::getPortPosition(double &x, double &y, int port_id)
 {
-    x = _posX + 200;
-    y = _posY + (port_id * 150);
+    // When runway parallel to the x axis
+    x = _posX + (port_id * 150);
+    y = _posY - 200;
+
+    // When runway parallel to the y axis
+    // x = _posX + 200;
+    // y = _posY + (port_id * 150);
 }

@@ -93,7 +93,7 @@ void Runway::processAirplaneQueue()
     // Continually process the queue
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         if (_waitingQueue.getSize() > 0 && _isBlocked == false) 
         {

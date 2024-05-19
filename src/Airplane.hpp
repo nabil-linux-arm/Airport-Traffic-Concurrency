@@ -53,7 +53,8 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
         std::shared_ptr<Runway> _currentRunway;   // The runway that the Airplane is currently waiting to enter
         std::shared_ptr<Runway> _nextRunway;   // The runway that the Airplane is currently heading towards
         double _posRunway;                     // Position of Airplane on runway
-        double _speed;                         // Speed of Airplane on runway
+        double _speed;                         // Speed of Airplane during simulation
+        double _default_speed;                 // Speed of Airplane on the runway
 
         position _startPos;
         position _destinationPos;

@@ -10,7 +10,7 @@
 enum RunwayType
 {
     normal,
-    landing,
+    sky,
     port
 };
 

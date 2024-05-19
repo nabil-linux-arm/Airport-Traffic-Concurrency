@@ -19,7 +19,8 @@ Airplane::Airplane()
     // _port = nullptr;
     _currentRunway = nullptr;
     _type = airplane;
-    _speed = 150; // m/s
+    _speed = 200; // m/s
+    _default_speed = 200; // m/s
     _portID = 0;
 }
 
@@ -91,6 +92,7 @@ void Airplane::move()
                 position source;
                 position destination;
                 RunwayType current_type = _currentRunway->getRunwayType();
+                _speed = _default_speed;
 
                 if (current_type == port && !hasEnteredPort)
                 {
@@ -129,6 +131,11 @@ void Airplane::move()
 
                     setStartPosition(source);
                     setDestinationPosition(destination); 
+
+                    if (_currentRunway->getExitRunway()->getRunwayType() == RunwayType::sky)
+                    {
+                        _speed += 200;
+                    }
                 }
                 
                 // // ----- RUNWAY IS NOT A PORT ------ //
@@ -185,7 +192,7 @@ void Airplane::move()
                     std::shared_ptr<Port> port_runway = std::dynamic_pointer_cast<Port>(_currentRunway);
                     position start;
                     // Simulate processing in the port
-                    this->startTimer(MIN_DELAY, MAX_DELAY+2000);
+                    this->startTimer(MAX_DELAY, 20000);
 
                     port_runway->getPortPosition(start.x, start.y, this->getPortID());
                     this->setStartPosition(start);
