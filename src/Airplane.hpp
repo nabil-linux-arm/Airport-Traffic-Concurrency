@@ -7,6 +7,10 @@
 class Port;
 class Runway;
 
+// TODO:
+// - [] Getter and setters for airplane speed
+
+// Struct for 2D pixel position with x and y
 struct position
 {
     double x;
@@ -18,46 +22,35 @@ class Airplane : public AirportObject, public std::enable_shared_from_this<Airpl
     public:
         // Constructors/Destructors
         Airplane();
-        ~Airplane();
 
         // Behaviour functions
         void simulate();
         void setCurrentRunway(std::shared_ptr<Runway> runway);
-        void setNextRunway(std::shared_ptr<Runway> runway);
-        std::shared_ptr<Runway> getNextRunway() { return _nextRunway; }
 
-        void setPortID(int port_id) { _portID = port_id; }
-        int getPortID() { return _portID; }
+        // Setter and Getters
+        void setPortID(int port_id);
+        int getPortID();
 
-        void setDestinationPosition(position destination)
-        {
-            _destinationPos = destination;
-            _posRunway = 0.0;
-        }
+        void setDestinationPosition(position destination);
+        void setStartPosition(position start);
 
-        void setStartPosition(position start) { _startPos = start; }
-
+        // Miscellaneous
         double calculateDistance();
-
         std::shared_ptr<Airplane> get_shared_this() { return shared_from_this(); }
 
     private:
-        void move(); // main logical function for the airplane
-        void moveToPort(int port_id); // creates the animation for moving to a specified port
+        void move(); // state machine logic for the airplane
 
-        // Support functions
-        void startTimer(int min, int max);  // Starts the delay for planes to be flying
+        void startTimer(int min, int max);     // Generates random delay between min and max
         
-        int _portID;
-        // std::shared_ptr<Port> _port;           // Port the Airplane is currently docked at (Undefined when not)
-        std::shared_ptr<Runway> _currentRunway;   // The runway that the Airplane is currently waiting to enter
-        std::shared_ptr<Runway> _nextRunway;   // The runway that the Airplane is currently heading towards
+        std::shared_ptr<Runway> _currentRunway;   // The runway that the Airplane is currently in
+        int _portID;                           // The port id of the port assigned to the airplane
         double _posRunway;                     // Position of Airplane on runway
-        double _speed;                         // Speed of Airplane during simulation
+        double _speed;                         // Current speed of Airplane during simulation
         double _default_speed;                 // Speed of Airplane on the runway
 
-        position _startPos;
-        position _destinationPos;
+        position _startPos;                    // The starting the position for the airplane on the runway
+        position _destinationPos;              // The destination position for the airplane on the runway
 
 };
 
