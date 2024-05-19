@@ -81,7 +81,7 @@ void createAirportObjects(std::vector< std::shared_ptr<Runway> > &runways,std::v
 
     // Initialise Runways
     auto landing_runway = std::make_shared<Runway>(); 
-    auto port_runway = std::make_shared<Port>(3); 
+    auto port_runway = std::make_shared<Port>(4); 
     auto exit_runway = std::make_shared<Runway>();
     auto sky_runway = std::make_shared<Runway>(sky);
 

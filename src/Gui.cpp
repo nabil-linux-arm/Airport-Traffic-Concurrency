@@ -44,21 +44,16 @@ void Gui::drawAirportObjects()
         if (it->getType() == ObjectType::airplane)
         {
             cv::RNG rng(it->getID());
-            int b = rng.uniform(0, 255);
             int g = rng.uniform(0, 255);
-            int r = sqrt(255*255 - g*g - r*r); // ensure that length of color vector is always 255
+            int b = sqrt(255*255 - g*g - b*b);
+            int r = rng.uniform(0, 255);
             cv::Scalar vehicleColor = cv::Scalar(b,g,r);
-            cv::circle(_images.at(1), cv::Point2d(posX, posY), 50, vehicleColor, -1);
+            cv::circle(_images.at(1), cv::Point2d(posX, posY), 40, vehicleColor, -1);
         }
-
-        // if (it->getType() == ObjectType::runway)
-        // {
-        //     if ()
-        // }
 
     }
 
-    float opacity = 0.85;
+    float opacity = 0.95;
     cv::addWeighted(_images.at(1), opacity, _images.at(0), 1.0 - opacity, 0, _images.at(2));
 
     // display background and overlay image
