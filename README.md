@@ -1,5 +1,8 @@
 # Airport-Runway-Traffic-Simulation
-<a id='yHkcdfbiRxVewge-nPy7Iw' class='gie-single' href='http://www.gettyimages.com/detail/1306212695' target='_blank' style='color:#a7a7a7;text-decoration:none;font-weight:normal !important;border:none;display:inline-block;'>Embed from Getty Images</a><script>window.gie=window.gie||function(c){(gie.q=gie.q||[]).push(c)};gie(function(){gie.widgets.load({id:'yHkcdfbiRxVewge-nPy7Iw',sig:'KNuI-NbMmLRYtZ2zzVIct8A47tFa3mJ_sGDAXXNxlvY=',w:'479px',h:'359px',items:'1306212695',caption: true ,tld:'com',is360: false })});</script><script src='//embed-cdn.gettyimages.com/widgets.js' charset='utf-8' async></script>
+![alt text](data/airport_runway_reference_img.jpg)
+
+Photo by <a href="https://unsplash.com/@98mohitkumar?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Mohit Kumar</a> on <a href="https://unsplash.com/photos/aerial-view-of-city-buildings-during-night-time-Q-tzZuNU-XI?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
+  
 
 ## Project Description
 
