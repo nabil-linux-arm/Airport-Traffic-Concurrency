@@ -1,8 +1,4 @@
 # Airport-Runway-Traffic-Simulation
-![alt text](data/airport_runway_reference_img.jpg)
-
-Photo by <a href="https://unsplash.com/@98mohitkumar?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Mohit Kumar</a> on <a href="https://unsplash.com/photos/aerial-view-of-city-buildings-during-night-time-Q-tzZuNU-XI?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
-  
 
 ## Project Description
 
