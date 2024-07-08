@@ -28,7 +28,7 @@ $ ./airport_traffic
 ```
 
 
-## Roadmap
+## Roadmap/Improvements
 
 * Easier system to create airport layout and connect runways together.
 * Improved GUI:
@@ -52,4 +52,40 @@ $ ./airport_traffic
 
 Breakdown the airport tarmac into a series of interconnected runways or taxiways, and at any given time ensure that only one plane is present on each tract of runway. This guarantees that only one plane is navigating around the runway at any given time and avoids other planes from interfering with each other’s paths. 
 
-![The idea behind the traffic solution](data/image.png)
+<!-- ![The idea behind the traffic solution](data/image.png) -->
+<p align="center">
+<img src="data/image.png" alt="drawing" width="500"/>
+</p>
+
+### Airplane
+The movement of the airplanes within the airport was determined by a state machine that included 4 states: Enter, Wait, Port, Exit. The airplane initially begins in the Wait state as it waits in a queue for the signal to enter the runway. Once it receives said signal, the airplane transitions to the Enter state, where it leaves the queue, enters the runway and travels all the way to opposite end. Once it reaches the end, it transitions to the Exit state, signalling to the runway that it has left it (runway). The cycle restarts when the plane enters another runway. The Port state was a feature I added to facilitate the same behaviour but on terminals (discussed later).
+
+### Runways
+As I said before the main purpose of the Runway class was to permit only one plane on the tarmac at a time. To achieve this behaviour there were three problems I needed to solve:
+1.	How do I block planes from entering the runway? -> Queues + Future.wait()
+2.	How do I know when the runway is clear? -> Runway state variable + Inifnite polling
+3.	How do I let the planes in the runway? -> Fulfill the promise
+
+NOTE: In C++ multi-threading the wait() function called on a future will block the thread until it’s corresponding promise calls set_value() which means that data is available and is ready to be retrieved. By doing this the airplane thread is allowed to resume and enters the runway.
+
+<p align="center">
+<img src="data/add_airplane_to_queue.png" alt="Airplane queue threads" width="800"/>
+</p>
+
+### Ports
+A Port is the section of the airport where the airplanes dock into terminals. In my implementation a single port can have multiple terminals, each accommodating one airplane. As with the runway, only one plane can be travelling into or out a terminal at any given time. Once the plane reaches the terminal or the exit side of the port, then the port’s runway is clear. I designed the program this way to simplify the process of planes moving in and out of their terminals and into the runways. By only having one plane moving at one time, it completely prevents collisions though at the cost of long queueing delays. 
+
+<p align="center">
+<img src="data/port_diagram.png" alt="Port diagram" width="600"/>
+</p>
+
+Combining the first constraint (one plane for each terminal) and the second constraint (one plane in the runway) I created an interesting problem, what would happen if all the terminals were occupied? The occupation of all the terminal implies that the port runway is clear, hence allowing an airplane to enter (Figure X). However, because there are no ports open, the plane is stuck in the runway. Because of this any plane that wants to exit the terminal can’t because the runway is occupied thereby creating a deadlock. The port runway and the terminal are the shared resources, and the planes are the objects trying to utilise said resource while holding on to the other. 
+
+<p align="center">
+<img src="data/deadlock_problem.png" alt="Port diagram" width="800"/>
+</p>
+
+To solve the deadlock there had to be a guarantee that one of the shared resources is freed before it can be obtained, and I chose the runway to be that resource. When a plane arrives at the start of the runway it is placed into a port waiting queue. If the terminals are all occupied the plane must wait in this queue, however if there is an available terminal the plane is transitioned to the runway waiting queue. This queue is exactly as the Runway waiting queue, which only lets a plane in the runway when it is clear. By queuing the airplane in this manner planes waiting to enter the port runway have an available terminal they can go to, thereby resolving the deadlock.
+
+### GUI
+The GUI for the simulation was implemented using the Open CV library and it’s drawing classes.
