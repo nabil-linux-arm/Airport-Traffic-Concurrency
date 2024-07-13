@@ -40,4 +40,3 @@ class AirportObject
 };
 
 #endif
-

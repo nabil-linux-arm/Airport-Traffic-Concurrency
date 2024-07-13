@@ -17,7 +17,7 @@ void AirportObject::setPosition(double x, double y)
 
 /**
  * Getter for the position of the object.
- * 
+ *
  * @param x The variable to store the X coordinate.
  * @param y The variable to store the Y coordinate.
 */

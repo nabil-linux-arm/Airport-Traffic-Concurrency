@@ -1,10 +1,12 @@
-#ifndef PORT_H 
-#define PORT_H 
+#ifndef PORT_H
+#define PORT_H
+
+#include <utility>
+#include <vector>
+#include <map>
 
 #include "AirportObject.hpp"
 #include "Runway.hpp"
-
-#include <vector>
 
 // TODO:
 // - [] Dedicated move functionality for port.
@@ -14,7 +16,7 @@
 class Airplane;
 class Runway;
 
-class Port : public Runway 
+class Port : public Runway
 {
     public:
         Port();
@@ -25,8 +27,9 @@ class Port : public Runway
 
         int getPortCount();
         void freePort(int port_id);
-        int getPort();        
-        void getPortPosition(double &x, double &y, int port_id);   
+        int getPort();
+        void getPortPosition(double &x, double &y, int port_id);
+        void setPortPosition(double x, double y, int port_id);
 
     private:
         void processPortQueue();
@@ -36,8 +39,9 @@ class Port : public Runway
 
         int _port_count;             // Number of ports available
         std::mutex _count_mtx;       // Mutex to protect the port pool
-        
+
         std::vector<int> _port_pool;  // List of ports available for assignment
+        std::map<int , std::pair<double, double> > _port_pos; // List of coordinates for corresponding ports
 
 };
 

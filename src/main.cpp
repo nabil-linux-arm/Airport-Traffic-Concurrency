@@ -118,7 +118,7 @@ void createAirportSimple(std::vector< std::shared_ptr<Runway> > &runways,std::ve
 
     // Initialise Runways
     auto landing_runway = std::make_shared<Runway>();
-    auto port_runway = std::make_shared<Port>(4);
+    auto port_runway = std::make_shared<Port>(3);
     auto exit_runway = std::make_shared<Runway>();
     auto sky_runway = std::make_shared<Runway>(sky);
 
@@ -137,6 +137,11 @@ void createAirportSimple(std::vector< std::shared_ptr<Runway> > &runways,std::ve
     port_runway->setExitRunway(exit_runway);
     exit_runway->setExitRunway(sky_runway);
     sky_runway->setExitRunway(landing_runway);
+
+    // Initialise (3) ports
+    port_runway->setPortPosition(1080, 1925, 1);
+    port_runway->setPortPosition(890, 1925, 2);
+    port_runway->setPortPosition(700, 1925, 3);
 
     // Initialise Airplanes
     for (int i = 0; i < nAirplanes; i++)
