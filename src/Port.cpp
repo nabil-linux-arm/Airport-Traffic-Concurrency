@@ -142,7 +142,7 @@ int Port::getPort()
 void Port::freePort(int port_id)
 {
     std::lock_guard<std::mutex> lock(_count_mtx);
-    // _port_pool.push_back(port_id);
+    _port_pool.push_back(port_id);
 }
 
 /**
