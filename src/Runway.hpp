@@ -12,7 +12,7 @@
 
 /**
  * An identifier for type of runway.
- * 
+ *
  * Depending on the runway type the airplane will act differently like move
  * move to a port, set a delay or speed up.
 */
@@ -37,14 +37,14 @@ class WaitingAirplanes
     private:
 
         std::vector<std::shared_ptr<Airplane> > _airplanes;
-        std::vector<std::promise<void> > _promises;     
+        std::vector<std::promise<void> > _promises;
         std::mutex _mtx;
 };
 
 class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
 {
     public:
-        
+
         Runway();
         Runway(RunwayType type);
 
@@ -53,7 +53,7 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         virtual void addAirplaneToQueue(std::shared_ptr<Airplane> airplane);
         void processAirplaneQueue();
 
-        void runwayClear();         
+        void runwayClear();
 
         // Setters and Getters
         std::shared_ptr<Runway> getExitRunway() { return _exitRunway; }
@@ -68,19 +68,21 @@ class Runway : public AirportObject, public std::enable_shared_from_this<Runway>
         // Miscellanious
         std::shared_ptr<Runway> get_shared_this() { return shared_from_this(); }
 
+    protected:
+        std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one
+
     private:
 
         void setIsBlocked(bool blocked) { _isBlocked = blocked; }
 
         WaitingAirplanes _waitingQueue;
-        std::shared_ptr<Runway> _exitRunway;    // The runway the airplane exits into after entering this one
         bool _isBlocked;
         double _length;                        // Length of the Runway
-                                              
+
         RunwayType _runway_type;              // This variable is shared with multiple threads without mutex (unsafe),
                                               // However, the variable does not change and is constant throughout the
                                               // simulation.
-        
+
 };
 
 #endif

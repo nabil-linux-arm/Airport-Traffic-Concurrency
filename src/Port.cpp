@@ -155,11 +155,11 @@ void Port::freePort(int port_id)
 */
 void Port::getPortPosition(double &x, double &y, int port_id)
 {
-    // When runway parallel to the x axis
-    x = _posX + (port_id * 150);
-    y = _posY - 200;
+    x = _port_pos[port_id].first;
+    y = _port_pos[port_id].second;
+}
 
-    // When runway parallel to the y axis
-    // x = _posX + 200;
-    // y = _posY + (port_id * 150);
+void Port::setPortPosition(double x, double y, int port_id)
+{
+    _port_pos[port_id] = std::pair<double, double>(x, y);
 }
