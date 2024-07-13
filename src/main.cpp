@@ -29,8 +29,8 @@ int main()
     std::vector< std::shared_ptr<Airplane> > airplanes;
     std::vector< std::shared_ptr<Runway> > runways;
 
-    createAirportObjects(runways, airplanes, num_plane, bck_image_name);
-    // createAirportSimple(runways, airplanes, num_plane, bck_image_name);
+    // createAirportObjects(runways, airplanes, num_plane, bck_image_name);
+    createAirportSimple(runways, airplanes, num_plane, bck_image_name);
 
     // ------- Begin simulation -------- //
     std::for_each(runways.begin(), runways.end(), [](std::shared_ptr<Runway> &r)
