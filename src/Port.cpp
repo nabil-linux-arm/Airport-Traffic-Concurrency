@@ -156,10 +156,10 @@ void Port::freePort(int port_id)
 void Port::getPortPosition(double &x, double &y, int port_id)
 {
     // When runway parallel to the x axis
-    x = _posX + (port_id * 150);
-    y = _posY - 200;
+    // x = _posX + (port_id * 150);
+    // y = _posY - 200;
 
     // When runway parallel to the y axis
-    // x = _posX + 200;
-    // y = _posY + (port_id * 150);
+    x = _posX + 200;
+    y = _posY + (port_id * 150);
 }
